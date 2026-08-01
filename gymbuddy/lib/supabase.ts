@@ -1584,6 +1584,15 @@ export async function resetPlanChecks(planId: string): Promise<void> {
 
 export type BodyMeasurement = { id: string; measured_on: string; part: string; value: number }
 
+// Partie mierzone osobno dla lewej i prawej strony (symetria)
+export const PAIRED_PARTS = ['biceps', 'forearm', 'thigh', 'calf']
+
+// Stare buildy zapisuja partie parzyste bez sufiksu — traktujemy jak prawa strone
+// (spojnie z migracja 20260801210000, ktora przeniosla stare wpisy na _r)
+function normalizeBodyPart(part: string): string {
+  return PAIRED_PARTS.includes(part) ? part + '_r' : part
+}
+
 // Wszystkie pomiary uzytkownika, od najnowszych
 export async function getBodyMeasurements(profileId: string): Promise<BodyMeasurement[]> {
   try {
@@ -1592,7 +1601,7 @@ export async function getBodyMeasurements(profileId: string): Promise<BodyMeasur
       .select('id, measured_on, part, value')
       .eq('profile_id', profileId)
       .order('measured_on', { ascending: false })
-    return (data ?? []).map((r: any) => ({ ...r, value: Number(r.value) }))
+    return (data ?? []).map((r: any) => ({ ...r, part: normalizeBodyPart(r.part), value: Number(r.value) }))
   } catch (e) { return [] }
 }
 
@@ -1615,7 +1624,7 @@ export async function getBodyGoals(profileId: string): Promise<Record<string, nu
   try {
     const { data } = await supabase.from('body_goals').select('part, target').eq('profile_id', profileId)
     const map: Record<string, number> = {}
-    ;(data ?? []).forEach((g: any) => { map[g.part] = Number(g.target) })
+    ;(data ?? []).forEach((g: any) => { map[normalizeBodyPart(g.part)] = Number(g.target) })
     return map
   } catch (e) { return {} }
 }
@@ -1628,6 +1637,90 @@ export async function setBodyGoal(profileId: string, part: string, target: numbe
       await supabase.from('body_goals').upsert({ profile_id: profileId, part, target }, { onConflict: 'profile_id,part' })
     }
   } catch (e) { }
+}
+
+// ============================================================
+// Zdjecia progresu sylwetki (prywatny bucket body-photos)
+// ============================================================
+
+export type BodyPhoto = { id: string; taken_on: string; photo_path: string }
+
+export async function getBodyPhotos(profileId: string): Promise<BodyPhoto[]> {
+  try {
+    const { data } = await supabase
+      .from('body_photos')
+      .select('id, taken_on, photo_path')
+      .eq('profile_id', profileId)
+      .order('taken_on', { ascending: true })
+    return data ?? []
+  } catch (e) { return [] }
+}
+
+export async function addBodyPhoto(profileId: string, photoPath: string, dateStr?: string): Promise<boolean> {
+  try {
+    const taken_on = dateStr ?? new Date().toISOString().split('T')[0]
+    const { error } = await supabase
+      .from('body_photos')
+      .upsert({ profile_id: profileId, taken_on, photo_path: photoPath }, { onConflict: 'profile_id,taken_on' })
+    return !error
+  } catch (e) { return false }
+}
+
+export async function deleteBodyPhoto(id: string, photoPath: string): Promise<void> {
+  try {
+    await supabase.storage.from('body-photos').remove([photoPath])
+    await supabase.from('body_photos').delete().eq('id', id)
+  } catch (e) { }
+}
+
+// Bucket jest prywatny — dostep tylko przez podpisane linki (1h)
+export async function signBodyPhotoUrls(paths: string[]): Promise<Record<string, string>> {
+  try {
+    if (paths.length === 0) return {}
+    const { data } = await supabase.storage.from('body-photos').createSignedUrls(paths, 3600)
+    const map: Record<string, string> = {}
+    ;(data ?? []).forEach((r: any) => { if (r.signedUrl && r.path) map[r.path] = r.signedUrl })
+    return map
+  } catch (e) { return {} }
+}
+
+// ============================================================
+// Zgody na wglad trenera w pomiary
+// ============================================================
+
+export async function getMeasurementShares(ownerProfileId: string): Promise<string[]> {
+  try {
+    const { data } = await supabase
+      .from('measurement_shares')
+      .select('trainer_profile_id')
+      .eq('owner_profile_id', ownerProfileId)
+    return (data ?? []).map((r: any) => r.trainer_profile_id)
+  } catch (e) { return [] }
+}
+
+export async function setMeasurementShare(ownerProfileId: string, trainerProfileId: string, enabled: boolean): Promise<void> {
+  try {
+    if (enabled) {
+      await supabase.from('measurement_shares').upsert(
+        { owner_profile_id: ownerProfileId, trainer_profile_id: trainerProfileId },
+        { onConflict: 'owner_profile_id,trainer_profile_id' }
+      )
+    } else {
+      await supabase.from('measurement_shares')
+        .delete()
+        .eq('owner_profile_id', ownerProfileId)
+        .eq('trainer_profile_id', trainerProfileId)
+    }
+  } catch (e) { }
+}
+
+// Strona trenera: pomiary podopiecznego (RLS przepuszcza tylko przy zgodzie)
+export async function getClientMeasurements(clientProfileId: string): Promise<{ rows: BodyMeasurement[]; goals: Record<string, number> }> {
+  const [rows, goals] = await Promise.all([
+    getBodyMeasurements(clientProfileId),
+    getBodyGoals(clientProfileId),
+  ])
+  return { rows, goals }
 }
 
 export async function getBigEvents(lat: number, lng: number): Promise<any[]> {

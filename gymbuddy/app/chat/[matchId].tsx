@@ -141,6 +141,7 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true)
   const [isBlocked, setIsBlocked] = useState(false)
   const [isTrainerChat, setIsTrainerChat] = useState(false)
+  const [clientSharesMeasurements, setClientSharesMeasurements] = useState(false)
   const [showSafetySheet, setShowSafetySheet] = useState(false)
   const [sendingInvite, setSendingInvite] = useState(false)
   const [duoWeeks, setDuoWeeks] = useState(0)
@@ -594,6 +595,15 @@ export default function ChatScreen() {
         setOtherProfile(other)
         const blockedIds = await getBlockedIds(me.id)
         setIsBlocked(blockedIds.includes(otherId))
+        // Trener: czy podopieczny udostepnil pomiary sylwetki (linijka w naglowku)
+        if ((me as any).is_trainer && match?.is_trainer_chat) {
+          supabase.from('measurement_shares')
+            .select('owner_profile_id')
+            .eq('trainer_profile_id', me.id)
+            .eq('owner_profile_id', otherId)
+            .maybeSingle()
+            .then(({ data }) => setClientSharesMeasurements(!!data))
+        }
       }
       const { data: msgs } = await supabase.from('messages').select('*').eq('match_id', matchId).order('sent_at', { ascending: true })
       setMessages(msgs ?? [])
@@ -932,6 +942,15 @@ export default function ChatScreen() {
         <TouchableOpacity onPress={() => { setSearchMode(v => !v); setSearchTerm('') }} style={{ marginRight: 10 }}>
           <Ionicons name="search" size={22} color={searchMode ? '#94e336' : 'rgba(255,255,255,0.7)'} />
         </TouchableOpacity>
+        {/* Pomiary podopiecznego: zloty przycisk, tylko gdy klient dal zgode */}
+        {clientSharesMeasurements && otherProfile && (
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/client-measurements', params: { clientId: otherProfile.id, clientName: otherProfile.name } })}
+            style={{ marginRight: 10 }}
+          >
+            <Ionicons name="body-outline" size={24} color="#f0b429" />
+          </TouchableOpacity>
+        )}
         {/* Prosba o opinie tylko w rozmowach klient-trener (skrzynka Studia), nie w zwyklych matchach */}
         {(myProfile as any)?.is_trainer && isTrainerChat && otherProfile && (
           <TouchableOpacity onPress={handleAskForReview} disabled={sendingInvite} style={{ marginRight: 10 }}>
