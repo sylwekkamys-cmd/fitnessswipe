@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.fitnessswipe.app",
+      "sha256_cert_fingerprints": [
+        "9C:F9:61:25:1A:3D:44:35:06:19:DD:1E:F4:0C:57:F2:4C:4B:FB:FA:63:BD:D5:C7:40:96:E3:43:3A:59:30:1F"
+      ]
+    }
+  }
+]

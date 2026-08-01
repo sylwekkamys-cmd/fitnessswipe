@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "X7VAY7F397.com.fitnessswipe.app",
+        "paths": ["/challenge/*", "/event/*", "/trainer/*", "/auth-callback", "/"]
+      }
+    ]
+  }
+}

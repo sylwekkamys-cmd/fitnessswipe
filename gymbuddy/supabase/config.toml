@@ -1,0 +1,25 @@
+
+[functions.ai]
+enabled = true
+# Tylko zalogowani uzytkownicy moga wywolywac funkcje AI
+verify_jwt = true
+import_map = "./functions/ai/deno.json"
+entrypoint = "./functions/ai/index.ts"
+
+[functions.daily-digest]
+enabled = true
+# Wywolywana przez pg_cron - autoryzacja przez naglowek x-cron-secret
+verify_jwt = false
+import_map = "./functions/daily-digest/deno.json"
+entrypoint = "./functions/daily-digest/index.ts"
+
+[functions.report-notification]
+enabled = true
+verify_jwt = false
+import_map = "./functions/report-notification/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/report-notification/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/report-notification/*.html" ]

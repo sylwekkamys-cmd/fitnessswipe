@@ -1,0 +1,9 @@
+# Pliki uniwersalnych linkow: serwowane z widocznego folderu /wk,
+# bo upload przeciagnij-i-upusc pomija katalogi zaczynajace sie od kropki
+/.well-known/assetlinks.json             /wk/assetlinks.json             200
+/.well-known/apple-app-site-association  /wk/apple-app-site-association  200
+
+# Podglady deep-linkow: sciezki z aplikacji renderuja open.html (status 200 = rewrite)
+/challenge/*  /open.html  200
+/event/*      /open.html  200
+/trainer/*    /open.html  200

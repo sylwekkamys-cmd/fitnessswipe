@@ -1,0 +1,275 @@
+import React from 'react'
+import { View, Text, StyleSheet, Animated } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+
+// ============================================================
+// Wspolne elementy wizualne relacji: filtry kolorystyczne (tinty)
+// i naklejki w 3 stylach — uzywane w edytorze, przegladarce
+// stories i podgladzie na profilu, zeby wszedzie wygladaly tak samo.
+// ============================================================
+
+// place/text/pr: wlasny tekst zapisany w naklejce (nie w statusie); day: data z dnia dodania.
+// s: skala naklejki ustawiona pinchem w edytorze (0.5-3, domyslnie 1)
+// activity: statystyki treningu (sport + m/mu = duza wartosc i jednostka,
+// tm = czas, ex = tempo/predkosc/kalorie). Tapniecie w edytorze rozsypuje duzy
+// napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
+// tapniecie zetonu skleja calosc z powrotem.
+export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string }
+export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number } & Partial<ActivityData>
+
+// Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
+export const ACTIVITY_SPORTS = [
+  { key: 'run', emoji: '👟' },
+  { key: 'ride', emoji: '🚵' },
+  { key: 'gym', emoji: '⚡' },
+  { key: 'walk', emoji: '👣' },
+  { key: 'swim', emoji: '🥽' },
+] as const
+
+// Zetony statystyk budowane z danych aktywnosci (2-3 sztuki zaleznie od pol)
+export function activityChips(act: ActivityData): { val: string; sub: string; color: string }[] {
+  return [
+    { val: act.m, sub: act.mu, color: '#94e336' },
+    ...(act.tm ? [{ val: act.tm, sub: 'CZAS', color: '#4fc3f7' }] : []),
+    ...(act.ex ? [{ val: act.ex.split(' ')[0], sub: act.ex.split(' ').slice(1).join(' ') || ' ', color: '#f0b429' }] : []),
+  ]
+}
+
+export const STATUS_FILTERS = ['', 'warm', 'cool', 'neon', 'sunset', 'noir', 'sepia', 'rose', 'ice', 'forest', 'gold', 'fade'] as const
+
+// Efekty nakladane NA filtr (mozna laczyc): winieta + ramki.
+// W bazie jada razem z filtrem w jednej kolumnie, rozdzielone "|" (np. "warm|vignette|frame")
+export const STATUS_EFFECTS = ['vignette', 'frame', 'framegold'] as const
+
+// Nakladka filtru/efektow: przyjmuje pojedynczy filtr ("warm") albo zlozenie ("warm|vignette")
+export function FilterLayer({ id }: { id?: string | null }) {
+  if (!id) return null
+  const tokens = id.split('|').filter(Boolean)
+  if (tokens.length === 0) return null
+  return <>{tokens.map(tok => <SingleLayer key={tok} id={tok} />)}</>
+}
+
+function SingleLayer({ id }: { id: string }) {
+  switch (id) {
+    case 'warm':
+      return <LinearGradient colors={['rgba(255,150,60,0.20)', 'rgba(255,70,10,0.14)']} style={s.fill} pointerEvents="none" />
+    case 'cool':
+      return <LinearGradient colors={['rgba(70,150,255,0.20)', 'rgba(10,50,140,0.16)']} style={s.fill} pointerEvents="none" />
+    case 'neon':
+      return <LinearGradient colors={['rgba(148,227,54,0.20)', 'rgba(0,170,255,0.16)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.fill} pointerEvents="none" />
+    case 'sunset':
+      return <LinearGradient colors={['rgba(255,94,58,0.24)', 'rgba(143,36,237,0.22)']} style={s.fill} pointerEvents="none" />
+    case 'noir':
+      return <LinearGradient colors={['rgba(0,0,0,0.10)', 'rgba(0,0,0,0.52)']} style={s.fill} pointerEvents="none" />
+    case 'sepia':
+      return <LinearGradient colors={['rgba(150,100,45,0.26)', 'rgba(70,45,20,0.30)']} style={s.fill} pointerEvents="none" />
+    case 'rose':
+      return <LinearGradient colors={['rgba(255,110,160,0.20)', 'rgba(190,40,110,0.18)']} style={s.fill} pointerEvents="none" />
+    case 'ice':
+      return <LinearGradient colors={['rgba(210,235,255,0.22)', 'rgba(90,140,200,0.20)']} style={s.fill} pointerEvents="none" />
+    case 'forest':
+      return <LinearGradient colors={['rgba(70,180,95,0.18)', 'rgba(10,80,50,0.24)']} style={s.fill} pointerEvents="none" />
+    case 'gold':
+      return <LinearGradient colors={['rgba(240,180,41,0.22)', 'rgba(170,105,20,0.20)']} style={s.fill} pointerEvents="none" />
+    case 'fade':
+      return <LinearGradient colors={['rgba(255,255,255,0.16)', 'rgba(220,220,230,0.12)']} style={s.fill} pointerEvents="none" />
+    case 'vignette':
+      // Przyciemnione rogi: dwie warstwy obramowania z zaokragleniem daja miekkie przejscie
+      return (
+        <View style={s.fill} pointerEvents="none">
+          <View style={s.vignetteOuter} />
+          <View style={s.vignetteInner} />
+        </View>
+      )
+    case 'frame':
+      return <View style={[s.frame, { borderColor: 'rgba(255,255,255,0.92)' }]} pointerEvents="none" />
+    case 'framegold':
+      return <View style={[s.frame, { borderColor: '#f0b429' }]} pointerEvents="none" />
+    default:
+      return null
+  }
+}
+
+// Delikatne pulsowanie naklejki (rekord/PR — przyciaga wzrok jak live badge)
+function Pulse({ children }: { children: React.ReactNode }) {
+  const scale = React.useRef(new Animated.Value(1)).current
+  React.useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(scale, { toValue: 1.07, duration: 850, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1, duration: 850, useNativeDriver: true }),
+    ]))
+    loop.start()
+    return () => loop.stop()
+  }, [scale])
+  return <Animated.View style={{ transform: [{ scale }] }}>{children}</Animated.View>
+}
+
+// Kolory probek do paska wyboru filtru w edytorze
+export const FILTER_SWATCHES: Record<string, [string, string]> = {
+  '': ['#3a4c63', '#2e415c'],
+  warm: ['#ff9650', '#ff4a0a'],
+  cool: ['#4696ff', '#0a328c'],
+  neon: ['#94e336', '#00aaff'],
+  sunset: ['#ff5e3a', '#8f24ed'],
+  noir: ['#555', '#111'],
+  sepia: ['#96642d', '#462d14'],
+  rose: ['#ff6ea0', '#be286e'],
+  ice: ['#d2ebff', '#5a8cc8'],
+  forest: ['#46b45f', '#0a5032'],
+  gold: ['#f0b429', '#aa6914'],
+  fade: ['#f2f2f6', '#b9b9c4'],
+}
+
+// Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
+// PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
+export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex }: {
+  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'
+  variant?: number
+  time?: string | null
+  gym?: string | null
+  text?: string | null
+  act?: ActivityData | null
+  sportLabel?: string
+  chipIndex?: number
+}) {
+  // Naklejka aktywnosci: duzy napis albo pojedynczy zeton (chipIndex po rozsypaniu)
+  if (type === 'activity' && act) {
+    const sport = ACTIVITY_SPORTS.find(sp => sp.key === act.sport)
+    const label = `${(sportLabel ?? act.sport).toUpperCase()} ${sport?.emoji ?? ''}`.trim()
+    if (typeof chipIndex === 'number' || (((variant ?? 0) % 2 + 2) % 2 === 1)) {
+      const chips = activityChips(act)
+      // Pojedynczy zeton (niezaleznie przeciagany) albo — dla starszych relacji — caly rzad
+      const toRender = typeof chipIndex === 'number' ? (chips[chipIndex] ? [chips[chipIndex]] : []) : chips
+      if (toRender.length === 0) return null
+      return (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {toRender.map((c, i) => (
+            <View key={i} style={[s.actChip, { borderColor: c.color, transform: [{ rotate: `${[-6, 3, 7][(typeof chipIndex === 'number' ? chipIndex : i) % 3]}deg` }] }]}>
+              <Text style={s.actChipVal} numberOfLines={1}>{c.val}</Text>
+              <Text style={[s.actChipSub, { color: c.color }]} numberOfLines={1}>{c.sub}</Text>
+            </View>
+          ))}
+        </View>
+      )
+    }
+    return (
+      <View style={{ alignItems: 'center' }}>
+        <Text style={s.actBigValue}>{act.m}</Text>
+        <Text style={s.actBigLabel}>{act.mu} · {label}</Text>
+        {(act.tm || act.ex) ? (
+          <Text style={s.actBigSub}>{[act.tm, act.ex].filter(Boolean).join(' · ')}</Text>
+        ) : null}
+      </View>
+    )
+  }
+
+  // Naklejki bez emoji — czysty tekst
+  const raw = type === 'time' ? (time || '--:--') : type === 'gym' ? (gym || '—') : (text || '—')
+  const v = ((variant ?? 0) % 3 + 3) % 3
+  const isPr = type === 'pr'
+  const label = isPr ? `PR · ${raw}` : raw
+  // Wlasny tekst zostaje jak wpisany; reszta (poza godzina) wielkimi literami
+  const upper = type !== 'time' && type !== 'text'
+
+  let node: React.ReactNode
+  if (v === 1) {
+    // Duzy goly napis z mocnym cieniem (jak tekst na IG stories)
+    node = (
+      <Text style={[s.bigText, isPr && { color: '#f0b429' }]}>
+        {upper ? label.toUpperCase() : label}
+      </Text>
+    )
+  } else if (v === 2) {
+    // Biala klasyczna pigulka (jak lokalizacja na IG)
+    node = (
+      <View style={s.whitePill}>
+        <Text style={[s.whitePillText, isPr && { color: '#8a6206' }]} numberOfLines={1}>{upper ? label.toUpperCase() : label}</Text>
+      </View>
+    )
+  } else {
+    // Szklana ciemna pigulka (domyslna, styl apki)
+    node = (
+      <View style={[s.glassPill, isPr && { borderColor: 'rgba(240,180,41,0.75)' }]}>
+        <Text style={[s.glassPillText, isPr && { color: '#f0b429' }]} numberOfLines={1}>{label}</Text>
+      </View>
+    )
+  }
+  return isPr ? <Pulse>{node}</Pulse> : <>{node}</>
+}
+
+// Naklejki w trybie ogladania (bez interakcji)
+export function OverlayPillsView({ status }: { status: any }) {
+  const overlays: StatusOverlay[] = Array.isArray(status?.overlays) ? status.overlays : []
+  if (overlays.length === 0) return null
+  return (
+    <>
+      {overlays.map((ov, i) => (
+        <View
+          key={i}
+          style={[
+            s.anchor,
+            { left: `${Math.min(Math.max(ov.x * 100, 2), 78)}%`, top: `${Math.min(Math.max(ov.y * 100, 6), 84)}%` },
+            { transform: [{ scale: ov.s ?? 1 }] },
+          ]}
+          pointerEvents="none"
+        >
+          <StickerContent
+            type={ov.type} variant={ov.v}
+            time={status?.training_time} gym={status?.gym_name} text={ov.text}
+            act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex } : null}
+            sportLabel={ov.text ?? undefined}
+            chipIndex={ov.chip}
+          />
+        </View>
+      ))}
+    </>
+  )
+}
+
+const s = StyleSheet.create({
+  fill: { ...StyleSheet.absoluteFillObject, zIndex: 2 },
+  anchor: { position: 'absolute', zIndex: 5, maxWidth: '76%' },
+  glassPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    backgroundColor: 'rgba(10,16,28,0.62)', borderRadius: 22,
+    paddingHorizontal: 14, paddingVertical: 9,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)',
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
+  },
+  glassPillIcon: { fontSize: 15 },
+  glassPillText: { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+  vignetteOuter: { ...StyleSheet.absoluteFillObject, borderWidth: 70, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 120 },
+  vignetteInner: { ...StyleSheet.absoluteFillObject, borderWidth: 34, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 80 },
+  frame: { position: 'absolute', top: 14, left: 14, right: 14, bottom: 14, borderWidth: 3, borderRadius: 22, zIndex: 2 },
+  bigText: {
+    fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,
+  },
+  whitePill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#ffffff', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 7, shadowOffset: { width: 0, height: 3 }, elevation: 6,
+  },
+  whitePillIcon: { fontSize: 14 },
+  whitePillText: { fontSize: 14, fontWeight: '900', color: '#16233a', letterSpacing: 0.6 },
+  actBigValue: {
+    fontSize: 52, fontWeight: '900', color: '#fff', lineHeight: 56,
+    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10,
+  },
+  actBigLabel: {
+    fontSize: 15, fontWeight: '900', color: '#94e336', letterSpacing: 2, marginTop: 2,
+    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
+  },
+  actBigSub: {
+    fontSize: 12.5, fontWeight: '600', color: 'rgba(255,255,255,0.85)', marginTop: 3,
+    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
+  },
+  actChip: {
+    width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(10,16,28,0.82)',
+    borderWidth: 2, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
+  },
+  actChipVal: { fontSize: 13, fontWeight: '900', color: '#fff' },
+  actChipSub: { fontSize: 8, fontWeight: '800', marginTop: 1, letterSpacing: 0.5 },
+})

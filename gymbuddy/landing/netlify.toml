@@ -1,0 +1,11 @@
+# Naglowki dla plikow uniwersalnych linkow — oba MUSZA byc serwowane jako application/json
+
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json"
+
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
