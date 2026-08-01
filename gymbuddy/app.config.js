@@ -13,6 +13,9 @@ const keys = {
   admobInterstitialAndroid: process.env.ADMOB_INTERSTITIAL_ANDROID || fileKeys.admobInterstitialAndroid || '',
   admobBannerAndroid: process.env.ADMOB_BANNER_ANDROID || fileKeys.admobBannerAndroid || '',
   admobRewardedAndroid: process.env.ADMOB_REWARDED_ANDROID || fileKeys.admobRewardedAndroid || '',
+  // DSN Sentry jest opcjonalny: bez niego monitoring jest po prostu wylaczony
+  // (aplikacja dziala normalnie), wiec nie blokuje builda jak klucze Supabase
+  sentryDsn: process.env.SENTRY_DSN || fileKeys.sentryDsn || '',
 }
 
 if (!keys.supabaseUrl || !keys.supabaseAnonKey) {
@@ -111,7 +114,11 @@ plugins: [
         android: {
           minSdkVersion: 26
         }
-      }]
+      }],
+      // Upload sourcemap/symboli robi sie tylko gdy na EAS ustawione sa
+      // SENTRY_AUTH_TOKEN + SENTRY_ORG + SENTRY_PROJECT; bez nich plugin
+      // loguje ostrzezenie i build idzie dalej
+      '@sentry/react-native'
     ],
     extra: {
       eas: {
@@ -124,6 +131,7 @@ plugins: [
       admobInterstitialAndroid: keys.admobInterstitialAndroid,
       admobBannerAndroid: keys.admobBannerAndroid,
       admobRewardedAndroid: keys.admobRewardedAndroid,
+      sentryDsn: keys.sentryDsn,
     }
   }
 }

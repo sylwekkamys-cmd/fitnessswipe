@@ -820,12 +820,23 @@ export default function ChatScreen() {
                 </View>
               )
             })() : null}
+            {!item.deleted_at && item.story_reply ? (
+              <View style={styles.storyReplyTag}>
+                <Ionicons name="return-up-forward" size={12} color={isMe ? 'rgba(13,27,46,0.6)' : 'rgba(255,255,255,0.6)'} />
+                <Text style={[styles.storyReplyTagText, isMe ? { color: 'rgba(13,27,46,0.6)' } : null]}>{t('chat.storyReplyTag')}</Text>
+              </View>
+            ) : null}
             {item.deleted_at ? (
               <Text style={[styles.deletedText, isMe ? { color: 'rgba(13,27,46,0.55)' } : null]}>{t('chat.deletedMsg')}</Text>
             ) : item.image_url ? (
-              <TouchableOpacity onPress={() => setImageViewer(item.image_url!)} activeOpacity={0.85}>
-                <Image source={{ uri: item.image_url }} style={styles.chatImage} />
-              </TouchableOpacity>
+              <View>
+                <TouchableOpacity onPress={() => setImageViewer(item.image_url!)} activeOpacity={0.85}>
+                  <Image source={{ uri: item.image_url }} style={styles.chatImage} />
+                </TouchableOpacity>
+                {item.content && !item.content.startsWith('📷') && item.content !== 'GIF 🎬' ? (
+                  <Text style={[styles.bubbleText, { marginTop: 6 }, isMe ? [styles.bubbleTextMe, { color: theme.onMe }] : styles.bubbleTextOther]}>{item.content}</Text>
+                ) : null}
+              </View>
             ) : item.audio_url ? (
               <VoiceBubble uri={item.audio_url} duration={item.audio_duration ?? 0} isMe={isMe} />
             ) : item.location_lat != null && item.location_lng != null ? (
@@ -1565,6 +1576,8 @@ const styles = StyleSheet.create({
   recordingPill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: BG, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: 'rgba(255,107,107,0.4)' },
   recordingDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#ff6b6b' },
   recordingText: { fontSize: 13.5, color: '#fff', fontWeight: '600' },
+  storyReplyTag: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+  storyReplyTagText: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' },
   quoteBox: { borderLeftWidth: 3, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 5, marginBottom: 6 },
   quoteBoxMe: { borderLeftColor: 'rgba(13,27,46,0.45)', backgroundColor: 'rgba(13,27,46,0.12)' },
   quoteBoxOther: { borderLeftColor: 'rgba(148,227,54,0.6)', backgroundColor: 'rgba(255,255,255,0.05)' },

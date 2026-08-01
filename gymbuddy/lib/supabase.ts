@@ -62,6 +62,7 @@ export type Message = {
   audio_url?: string | null
   audio_duration?: number | null
   edited_at?: string | null
+  story_reply?: boolean | null
   location_lat?: number | null
   location_lng?: number | null
   location_name?: string | null

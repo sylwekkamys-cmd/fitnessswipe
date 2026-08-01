@@ -288,7 +288,9 @@
     "themeHint": "Ambos veréis el tema — fondo y color de tus burbujas.",
     "searchMenu": "Buscar en la conversación",
     "viewProfile": "Ver perfil",
-    "duelTile": "Duelo"
+    "duelTile": "Duelo",
+    "storyReplyPlaceholder": "Responder a la historia…",
+    "storyReplyTag": "Respuesta a la historia"
   },
   "matches": {
     "sayHi": "Nuevo match — saluda! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Máximo {{max}} historias activas. Borra una para añadir otra.",
     "addAnother": "Añadir otra historia ({{n}}/{{max}})",
     "noEditHint": "Una historia publicada no se puede editar — puedes borrarla o compartirla fuera.",
-    "shareExternal": "Compartir en otras apps"
+    "shareExternal": "Compartir en otras apps",
+    "reactionPush": "reaccionó a tu historia"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

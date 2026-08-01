@@ -19,6 +19,28 @@ try {
   }
 } catch (e) { }
 
+// Sentry startuje PO naszym handlerze ErrorUtils: jego handler owija nasz i woła
+// go po wyslaniu raportu, wiec fatale trafiaja do Sentry, a ekran diagnostyczny
+// dalej dziala. Brak DSN = monitoring wylaczony, aplikacja dziala normalnie.
+try {
+  var Constants = require('expo-constants').default
+  var sentryDsn = Constants && Constants.expoConfig && Constants.expoConfig.extra && Constants.expoConfig.extra.sentryDsn
+  var isExpoGo = Constants && Constants.executionEnvironment === 'storeClient'
+  if (sentryDsn && !isExpoGo) {
+    var Sentry = require('@sentry/react-native')
+    Sentry.init({
+      dsn: sentryDsn,
+      enabled: !__DEV__,
+      // Sam monitoring bledow — bez sladow wydajnosciowych (koszty i szum)
+      tracesSampleRate: 0,
+      sendDefaultPii: false,
+    })
+    global.__SENTRY_ENABLED = true
+  }
+} catch (e) {
+  try { global.__BOOT_ERRORS.push('SENTRY INIT: ' + String((e && e.message) || e)) } catch (x) { }
+}
+
 function registerFallback() {
   try {
     var RN = require('react-native')

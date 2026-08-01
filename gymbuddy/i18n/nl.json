@@ -288,7 +288,9 @@
     "themeHint": "Jullie zien het thema allebei — achtergrond en de kleur van je bubbels.",
     "searchMenu": "Zoeken in het gesprek",
     "viewProfile": "Profiel bekijken",
-    "duelTile": "Duel"
+    "duelTile": "Duel",
+    "storyReplyPlaceholder": "Reageer op story…",
+    "storyReplyTag": "Reactie op story"
   },
   "matches": {
     "sayHi": "Nieuwe match — zeg hallo! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maximaal {{max}} actieve stories. Verwijder er een om een nieuwe toe te voegen.",
     "addAnother": "Nog een story toevoegen ({{n}}/{{max}})",
     "noEditHint": "Een geplaatste story kan niet worden bewerkt — je kunt hem verwijderen of elders delen.",
-    "shareExternal": "Delen naar andere apps"
+    "shareExternal": "Delen naar andere apps",
+    "reactionPush": "heeft op je story gereageerd"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

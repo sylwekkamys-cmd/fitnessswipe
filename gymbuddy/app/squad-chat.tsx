@@ -16,6 +16,13 @@ const PRIMARY = '#7dc52e'
 const BG = '#0d1b2e'
 const BG_LIGHT = '#1a2a44'
 
+// Throttling pushy: przy zywej rozmowie kazda wiadomosc bombardowala czlonkow
+// osobnym pushem. Max 1 push/min na ekipe z tego urzadzenia — kolejne
+// wiadomosci i tak docieraja realtime'em, a osoby poza czatem dostana
+// nastepny push najdalej po minucie. Poziom modulu: przezywa remount ekranu.
+const lastSquadPushAt: Record<string, number> = {}
+const SQUAD_PUSH_INTERVAL_MS = 60_000
+
 // Czat ekipy "na dzis": wspolny watek czlonkow ogloszenia do ustalenia
 // szczegolow spotkania. Dostarczanie podwojne (postgres_changes + broadcast
 // od nadawcy) z deduplikacja — lekcja z czatu wyzwan.
@@ -95,13 +102,18 @@ export default function SquadChatScreen() {
       if (!saved) throw new Error('send failed')
       setMessages(prev => prev.map(m => m.id === tempMessage.id ? saved : m))
       broadcastRef.current?.send({ type: 'broadcast', event: 'msg', payload: saved })
-      // Push do pozostalych czlonkow — spotkanie jest dzis, licza sie minuty
-      try {
-        const { notifyProfile } = await import('../lib/notifications')
-        Object.keys(membersMap)
-          .filter(id => id !== myProfile.id)
-          .forEach(id => notifyProfile(id, `⚡ ${myProfile.name}`, content, { type: 'squad' }))
-      } catch (e) { }
+      // Push do pozostalych czlonkow — spotkanie jest dzis, licza sie minuty,
+      // ale nie czesciej niz raz na minute (throttling powyzej)
+      const now = Date.now()
+      if (now - (lastSquadPushAt[squadId] ?? 0) >= SQUAD_PUSH_INTERVAL_MS) {
+        lastSquadPushAt[squadId] = now
+        try {
+          const { notifyProfile } = await import('../lib/notifications')
+          Object.keys(membersMap)
+            .filter(id => id !== myProfile.id)
+            .forEach(id => notifyProfile(id, `⚡ ${myProfile.name}`, content, { type: 'squad' }))
+        } catch (e) { }
+      }
     } catch (e) {
       setMessages(prev => prev.filter(m => m.id !== tempMessage.id))
       setText(content)

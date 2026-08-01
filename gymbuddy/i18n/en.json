@@ -288,7 +288,9 @@
     "themeHint": "Both of you will see the theme — background and your bubble color.",
     "searchMenu": "Search in conversation",
     "viewProfile": "View profile",
-    "duelTile": "Duel"
+    "duelTile": "Duel",
+    "storyReplyPlaceholder": "Reply to story…",
+    "storyReplyTag": "Reply to story"
   },
   "matches": {
     "sayHi": "New match — say hi! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maximum {{max}} active stories. Delete one to add a new one.",
     "addAnother": "Add another story ({{n}}/{{max}})",
     "noEditHint": "A published story can't be edited — you can delete it or share it elsewhere.",
-    "shareExternal": "Share to other apps"
+    "shareExternal": "Share to other apps",
+    "reactionPush": "reacted to your story"
   },
   "reportBlock": {
     "report": "Report user",

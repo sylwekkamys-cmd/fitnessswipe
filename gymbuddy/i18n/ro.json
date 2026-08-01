@@ -288,7 +288,9 @@
     "themeHint": "Amândoi veți vedea tema — fundalul și culoarea bulelor tale.",
     "searchMenu": "Caută în conversație",
     "viewProfile": "Vezi profilul",
-    "duelTile": "Duel"
+    "duelTile": "Duel",
+    "storyReplyPlaceholder": "Răspunde la poveste…",
+    "storyReplyTag": "Răspuns la poveste"
   },
   "matches": {
     "sayHi": "Potrivire nouă — salută! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maximum {{max}} story-uri active. Șterge unul ca să adaugi altul.",
     "addAnother": "Adaugă alt story ({{n}}/{{max}})",
     "noEditHint": "Un story publicat nu poate fi editat — îl poți șterge sau distribui în altă parte.",
-    "shareExternal": "Distribuie în alte aplicații"
+    "shareExternal": "Distribuie în alte aplicații",
+    "reactionPush": "a reacționat la povestea ta"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

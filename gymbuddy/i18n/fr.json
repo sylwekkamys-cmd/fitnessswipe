@@ -288,7 +288,9 @@
     "themeHint": "Vous verrez le thème tous les deux — fond et couleur de tes bulles.",
     "searchMenu": "Rechercher dans la conversation",
     "viewProfile": "Voir le profil",
-    "duelTile": "Défi"
+    "duelTile": "Défi",
+    "storyReplyPlaceholder": "Répondre à la story…",
+    "storyReplyTag": "Réponse à la story"
   },
   "matches": {
     "sayHi": "Nouveau match — dis bonjour ! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maximum {{max}} stories actives. Supprimes-en une pour en ajouter une nouvelle.",
     "addAnother": "Ajouter une autre story ({{n}}/{{max}})",
     "noEditHint": "Une story publiée ne peut pas être modifiée — tu peux la supprimer ou la partager ailleurs.",
-    "shareExternal": "Partager vers d'autres applis"
+    "shareExternal": "Partager vers d'autres applis",
+    "reactionPush": "a réagi à ta story"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

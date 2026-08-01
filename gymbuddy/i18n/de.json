@@ -288,7 +288,9 @@
     "themeHint": "Ihr seht das Design beide — Hintergrund und deine Blasenfarbe.",
     "searchMenu": "In der Unterhaltung suchen",
     "viewProfile": "Profil ansehen",
-    "duelTile": "Duell"
+    "duelTile": "Duell",
+    "storyReplyPlaceholder": "Auf Story antworten…",
+    "storyReplyTag": "Antwort auf Story"
   },
   "matches": {
     "sayHi": "Neues Match — sag Hallo! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maximal {{max}} aktive Storys. Lösche eine, um eine neue hinzuzufügen.",
     "addAnother": "Weitere Story hinzufügen ({{n}}/{{max}})",
     "noEditHint": "Eine veröffentlichte Story lässt sich nicht bearbeiten — du kannst sie löschen oder weiterteilen.",
-    "shareExternal": "In anderen Apps teilen"
+    "shareExternal": "In anderen Apps teilen",
+    "reactionPush": "hat auf deine Story reagiert"
   },
   "reportBlock": {
     "report": "Nutzer melden",

@@ -288,7 +288,9 @@
     "themeHint": "Motyw zobaczycie oboje — tło i kolor Twoich dymków.",
     "searchMenu": "Szukaj w rozmowie",
     "viewProfile": "Zobacz profil",
-    "duelTile": "Wyzwanie"
+    "duelTile": "Wyzwanie",
+    "storyReplyPlaceholder": "Odpowiedz na relację…",
+    "storyReplyTag": "Odpowiedź na relację"
   },
   "matches": {
     "sayHi": "Nowe dopasowanie — przywitaj się! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "Maksymalnie {{max}} aktywne relacje. Usuń którąś, żeby dodać nową.",
     "addAnother": "Dodaj kolejną relację ({{n}}/{{max}})",
     "noEditHint": "Opublikowanej relacji nie można edytować — możesz ją usunąć albo udostępnić dalej.",
-    "shareExternal": "Udostępnij na inne aplikacje"
+    "shareExternal": "Udostępnij na inne aplikacje",
+    "reactionPush": "zareagowano na Twoją relację"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

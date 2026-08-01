@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -70,7 +70,57 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
   const [muted, setMuted] = useState(false)
   const [reporting, setReporting] = useState(false)
   const [myReactions, setMyReactions] = useState<Record<string, string>>({})
+  // Odpowiedz na relacje -> czat 1:1 (tylko gdy jest match z autorem)
+  const [matchByProfile, setMatchByProfile] = useState<Record<string, string>>({})
+  const [replyText, setReplyText] = useState('')
+  const [sendingReply, setSendingReply] = useState(false)
+  const [replySent, setReplySent] = useState(false)
   const touchStart = useRef({ x: 0, y: 0 })
+
+  // Mapa autor -> id matcha (odpowiadac mozna tylko dopasowanym; czaty trenerskie odpadaja)
+  useEffect(() => {
+    if (!visible || !myProfile || people.length === 0) return
+    supabase
+      .from('matches')
+      .select('id, profile_a_id, profile_b_id')
+      .or(`profile_a_id.eq.${myProfile.id},profile_b_id.eq.${myProfile.id}`)
+      .not('is_trainer_chat', 'is', true)
+      .then(({ data }) => {
+        const map: Record<string, string> = {}
+        ;(data ?? []).forEach((m: any) => {
+          map[m.profile_a_id === myProfile.id ? m.profile_b_id : m.profile_a_id] = m.id
+        })
+        setMatchByProfile(map)
+      })
+  }, [visible])
+
+  // Zmiana slajdu czysci stan odpowiedzi
+  useEffect(() => { setReplyText(''); setReplySent(false) }, [index, visible])
+
+  async function sendStoryReply() {
+    const person = people[index]
+    if (!person || !myProfile || !replyText.trim() || sendingReply) return
+    const matchId = matchByProfile[person.profile_id]
+    if (!matchId) return
+    setSendingReply(true)
+    try {
+      await supabase.from('messages').insert({
+        match_id: matchId,
+        sender_id: myProfile.id,
+        content: replyText.trim(),
+        image_url: person.status_photo_url || null,
+        story_reply: true,
+      })
+      try {
+        const { notifyProfile } = await import('../lib/notifications')
+        notifyProfile(person.profile_id, myProfile.name, replyText.trim(), { type: 'message', matchId })
+      } catch (e) { }
+      setReplyText('')
+      setReplySent(true)
+      setTimeout(() => setReplySent(false), 2000)
+    } catch (e) { }
+    finally { setSendingReply(false) }
+  }
 
   useEffect(() => { if (visible) setIndex(initialIndex) }, [visible, initialIndex])
 
@@ -103,11 +153,19 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
       await supabase.from('status_reactions').delete()
         .eq('status_profile_id', statusProfileId).eq('reactor_id', myProfile.id)
     } else {
+      const isNew = !current
       setMyReactions(prev => ({ ...prev, [statusProfileId]: emoji }))
       await supabase.from('status_reactions').upsert(
         { status_profile_id: statusProfileId, reactor_id: myProfile.id, emoji },
         { onConflict: 'status_profile_id,reactor_id' }
       )
+      // Push do autora tylko przy PIERWSZEJ reakcji (zmiana emoji nie spamuje)
+      if (isNew && statusProfileId !== myProfile.id) {
+        try {
+          const { notifyProfile } = await import('../lib/notifications')
+          notifyProfile(statusProfileId, myProfile.name, `${emoji} ${t('trainingStatus.reactionPush')}`, { type: 'story_reaction' })
+        } catch (e) { }
+      }
     }
   }
 
@@ -150,7 +208,7 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <View style={styles.modal}>
+      <KeyboardAvoidingView style={styles.modal} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {people.map((p, i) => (
           <StoryMedia key={p.id ?? `${p.profile_id}-${i}`} person={p} isActive={visible && i === index} muted={muted} />
         ))}
@@ -232,6 +290,30 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
             {/* Reakcje i przejscie do profilu tylko dla OGLADAJACYCH — nie na wlasnej relacji */}
             {!isOwn && (
               <>
+                {/* Odpowiedz wiadomoscia — tylko gdy autor to Twoj match */}
+                {matchByProfile[person.profile_id] && (
+                  <View style={styles.replyRow}>
+                    <TextInput
+                      style={styles.replyInput}
+                      placeholder={t('chat.storyReplyPlaceholder')}
+                      placeholderTextColor="rgba(255,255,255,0.45)"
+                      value={replyText}
+                      onChangeText={setReplyText}
+                      maxLength={300}
+                    />
+                    <TouchableOpacity
+                      style={[styles.replySendBtn, (!replyText.trim() || sendingReply) && { opacity: 0.5 }]}
+                      onPress={sendStoryReply}
+                      disabled={!replyText.trim() || sendingReply}
+                    >
+                      {sendingReply ? <ActivityIndicator size="small" color="#0d1b2e" /> : replySent ? (
+                        <Ionicons name="checkmark" size={18} color="#0d1b2e" />
+                      ) : (
+                        <Ionicons name="send" size={16} color="#0d1b2e" />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <View style={styles.reactionsRow}>
                   {REACTION_EMOJIS.map(emoji => {
                     const active = myReactions[person.profile_id] === emoji
@@ -261,7 +343,7 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
             )}
           </View>
         ) : null}
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }
@@ -287,6 +369,9 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
   partnerChip: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: '#94e336', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 8 },
   partnerChipText: { fontSize: 11, fontWeight: '700', color: '#0d1b2e' },
+  replyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  replyInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 22, paddingHorizontal: 15, paddingVertical: 9, fontSize: 14, color: '#fff' },
+  replySendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center' },
   reactionsRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
   reactionBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
   reactionBtnActive: { backgroundColor: 'rgba(148,227,54,0.35)', borderWidth: 1.5, borderColor: '#94e336' },

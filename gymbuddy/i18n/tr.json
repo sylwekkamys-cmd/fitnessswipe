@@ -288,7 +288,9 @@
     "themeHint": "Temayı ikiniz de göreceksiniz — arka plan ve balon rengin.",
     "searchMenu": "Konuşmada ara",
     "viewProfile": "Profili gör",
-    "duelTile": "Düello"
+    "duelTile": "Düello",
+    "storyReplyPlaceholder": "Hikayeye yanıt ver…",
+    "storyReplyTag": "Hikayeye yanıt"
   },
   "matches": {
     "sayHi": "Yeni eşleşme — selam ver! 👋",
@@ -720,7 +722,8 @@
     "storiesLimit": "En fazla {{max}} aktif hikaye. Yeni eklemek için birini sil.",
     "addAnother": "Bir hikaye daha ekle ({{n}}/{{max}})",
     "noEditHint": "Yayınlanan hikaye düzenlenemez — silebilir veya başka yerde paylaşabilirsin.",
-    "shareExternal": "Diğer uygulamalarda paylaş"
+    "shareExternal": "Diğer uygulamalarda paylaş",
+    "reactionPush": "hikayene tepki verdi"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",
