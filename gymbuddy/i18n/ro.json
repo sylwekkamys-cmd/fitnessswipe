@@ -598,7 +598,10 @@
     "int_solid": "Serios",
     "int_max": "La maxim",
     "streakNow": "Serie de {{count}} zile!",
-    "partnerLoggedPush": "a înregistrat antrenamentul vostru comun — înregistrează-l și tu și păstrează-ți seria! 🔥"
+    "partnerLoggedPush": "a înregistrat antrenamentul vostru comun — înregistrează-l și tu și păstrează-ți seria! 🔥",
+    "stepsLabel": "Pași",
+    "stepsPlaceholder": "ex. 8500",
+    "stepsAuto": "Auto de pe ceas"
   },
   "trainingStatus": {
     "shareBtn": "Distribuie",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Măsurătorile clientului",
     "clientLatest": "Ultimele măsurători",
     "clientNoData": "Nicio dată — clientul nu a partajat sau măsurat încă nimic.",
-    "clientConsentNote": "Clientul a partajat aceste date cu tine și poate revoca accesul oricând."
+    "clientConsentNote": "Clientul a partajat aceste date cu tine și poate revoca accesul oricând.",
+    "photosExampleLabel": "Așa va arăta comparația",
+    "exampleBefore": "înainte",
+    "exampleAfter": "după"
   },
   "plans": {
     "title": "Planuri de antrenament",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Încă nu ai clienți — poți trimite planuri persoanelor cu care ai un chat de antrenor în Studio.",
     "assignedToast": "Plan trimis lui {{name}}!",
     "assignPushBody": "a pregătit un plan de antrenament pentru tine: „{{plan}}”",
-    "fromTrainer": "Plan de la antrenorul {{name}}"
+    "fromTrainer": "Plan de la antrenorul {{name}}",
+    "exampleSquat": "Genuflexiuni cu bară",
+    "exampleBenchPress": "Împins la bancă",
+    "examplePlank": "Plank"
   },
   "leaderboard": {
     "title": "Clasament local",

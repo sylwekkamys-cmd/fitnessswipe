@@ -598,7 +598,10 @@
     "int_solid": "Stevig",
     "int_max": "Alles geven",
     "streakNow": "{{count}} dagen streak!",
-    "partnerLoggedPush": "heeft jullie gezamenlijke training gelogd — log hem ook en houd je streak! 🔥"
+    "partnerLoggedPush": "heeft jullie gezamenlijke training gelogd — log hem ook en houd je streak! 🔥",
+    "stepsLabel": "Stappen",
+    "stepsPlaceholder": "bijv. 8500",
+    "stepsAuto": "Automatisch van horloge"
   },
   "trainingStatus": {
     "shareBtn": "Delen",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Metingen van cliënt",
     "clientLatest": "Nieuwste metingen",
     "clientNoData": "Geen gegevens — de cliënt heeft nog niets gedeeld of gemeten.",
-    "clientConsentNote": "De cliënt deelde deze gegevens met jou en kan de toegang op elk moment intrekken."
+    "clientConsentNote": "De cliënt deelde deze gegevens met jou en kan de toegang op elk moment intrekken.",
+    "photosExampleLabel": "Zo ziet de vergelijking eruit",
+    "exampleBefore": "voor",
+    "exampleAfter": "na"
   },
   "plans": {
     "title": "Trainingsschema’s",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Nog geen klanten — je kunt plannen sturen naar mensen met wie je een trainerchat in Studio hebt.",
     "assignedToast": "Plan verstuurd naar {{name}}!",
     "assignPushBody": "heeft een trainingsplan voor je gemaakt: „{{plan}}”",
-    "fromTrainer": "Plan van trainer {{name}}"
+    "fromTrainer": "Plan van trainer {{name}}",
+    "exampleSquat": "Barbell squat",
+    "exampleBenchPress": "Bankdrukken",
+    "examplePlank": "Plank"
   },
   "leaderboard": {
     "title": "Lokale ranglijst",

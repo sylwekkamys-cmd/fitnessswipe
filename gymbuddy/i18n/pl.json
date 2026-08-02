@@ -598,7 +598,10 @@
     "int_solid": "Solidny",
     "int_max": "Do padu",
     "streakNow": "Streak {{count}} dni!",
-    "partnerLoggedPush": "dodał wasz wspólny trening — zaloguj go też i podbij streak! 🔥"
+    "partnerLoggedPush": "dodał wasz wspólny trening — zaloguj go też i podbij streak! 🔥",
+    "stepsLabel": "Kroki",
+    "stepsPlaceholder": "np. 8500",
+    "stepsAuto": "Auto z zegarka"
   },
   "trainingStatus": {
     "shareBtn": "Udostępnij",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Pomiary podopiecznego",
     "clientLatest": "Najnowsze pomiary",
     "clientNoData": "Brak danych — podopieczny nie udostępnił jeszcze pomiarów albo niczego nie zmierzył.",
-    "clientConsentNote": "Podopieczny udostępnił Ci te dane i może cofnąć zgodę w każdej chwili."
+    "clientConsentNote": "Podopieczny udostępnił Ci te dane i może cofnąć zgodę w każdej chwili.",
+    "photosExampleLabel": "Tak będzie wyglądać porównanie",
+    "exampleBefore": "przed",
+    "exampleAfter": "po"
   },
   "plans": {
     "title": "Plany treningowe",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Nie masz jeszcze podopiecznych — plan możesz wysłać osobom, z którymi masz czat trenerski w Studio.",
     "assignedToast": "Plan wysłany do {{name}}!",
     "assignPushBody": "przygotował(a) dla Ciebie plan treningowy: „{{plan}}”",
-    "fromTrainer": "Plan od trenera {{name}}"
+    "fromTrainer": "Plan od trenera {{name}}",
+    "exampleSquat": "Przysiad ze sztangą",
+    "exampleBenchPress": "Wyciskanie leżąc",
+    "examplePlank": "Plank"
   },
   "leaderboard": {
     "title": "Ranking okolicy",

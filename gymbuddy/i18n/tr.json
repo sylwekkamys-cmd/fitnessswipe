@@ -598,7 +598,10 @@
     "int_solid": "Ciddi",
     "int_max": "Full güç",
     "streakNow": "{{count}} günlük seri!",
-    "partnerLoggedPush": "ortak antrenmanınızı kaydetti — sen de kaydet ve serini koru! 🔥"
+    "partnerLoggedPush": "ortak antrenmanınızı kaydetti — sen de kaydet ve serini koru! 🔥",
+    "stepsLabel": "Adımlar",
+    "stepsPlaceholder": "ör. 8500",
+    "stepsAuto": "Saatten otomatik"
   },
   "trainingStatus": {
     "shareBtn": "Paylaş",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Danışan ölçümleri",
     "clientLatest": "Son ölçümler",
     "clientNoData": "Veri yok — danışan henüz bir şey paylaşmadı veya ölçmedi.",
-    "clientConsentNote": "Danışan bu verileri seninle paylaştı ve erişimi istediği zaman iptal edebilir."
+    "clientConsentNote": "Danışan bu verileri seninle paylaştı ve erişimi istediği zaman iptal edebilir.",
+    "photosExampleLabel": "Karşılaştırma böyle görünecek",
+    "exampleBefore": "önce",
+    "exampleAfter": "sonra"
   },
   "plans": {
     "title": "Antrenman planları",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Henüz müşterin yok — planları Stüdyo'da antrenör sohbetin olan kişilere gönderebilirsin.",
     "assignedToast": "Plan {{name}} kişisine gönderildi!",
     "assignPushBody": "senin için bir antrenman planı hazırladı: „{{plan}}”",
-    "fromTrainer": "Antrenör {{name}} planı"
+    "fromTrainer": "Antrenör {{name}} planı",
+    "exampleSquat": "Barbell squat",
+    "exampleBenchPress": "Bench press",
+    "examplePlank": "Plank"
   },
   "leaderboard": {
     "title": "Yerel sıralama",

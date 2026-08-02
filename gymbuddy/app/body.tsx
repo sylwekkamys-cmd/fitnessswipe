@@ -637,6 +637,32 @@ export default function BodyScreen() {
               <Text style={styles.compareHint}>{t('body.compareHint')}</Text>
             )}
 
+            {/* Poglądowy przykład dla nowych użytkowników: jak wygląda porównanie
+                po dodaniu 2 zdjęć — czysto ilustracyjne, żadnych realnych danych */}
+            {photos.length === 0 && (
+              <View style={styles.exampleWrap}>
+                <Text style={styles.exampleLabel}>{t('body.photosExampleLabel')}</Text>
+                <View style={styles.exampleCompare}>
+                  <View style={styles.examplePersonBox}>
+                    <Ionicons name="person" size={38} color="rgba(255,255,255,0.22)" />
+                    <View style={[styles.examplePhotoBadge, { left: 8 }]}>
+                      <Text style={styles.examplePhotoBadgeText}>{t('body.exampleBefore')}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.exampleDivider} />
+                  <View style={[styles.examplePersonBox, styles.examplePersonBoxAfter]}>
+                    <Ionicons name="person" size={44} color="rgba(148,227,54,0.55)" />
+                    <View style={[styles.examplePhotoBadge, { right: 8, backgroundColor: 'rgba(148,227,54,0.85)' }]}>
+                      <Text style={[styles.examplePhotoBadgeText, { color: BG }]}>{t('body.exampleAfter')}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.exampleHandle}>
+                    <Ionicons name="swap-horizontal" size={13} color={BG} />
+                  </View>
+                </View>
+              </View>
+            )}
+
             {/* Miniatury: tap = wybor do porownania, przytrzymanie = usun */}
             {photos.length > 0 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginTop: 12 }}>
@@ -842,6 +868,15 @@ const styles = StyleSheet.create({
   sliderHandle: { position: 'absolute', top: '50%', width: 30, height: 30, borderRadius: 15, backgroundColor: LIME, marginLeft: -15, marginTop: -15, alignItems: 'center', justifyContent: 'center' },
   photoBadge: { position: 'absolute', top: 8, backgroundColor: 'rgba(13,27,46,0.8)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
   photoBadgeText: { fontSize: 11, fontWeight: '700', color: '#dbe5f5' },
+  exampleWrap: { marginTop: 20 },
+  exampleLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.35)', textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  exampleCompare: { height: 140, borderRadius: 14, overflow: 'hidden', flexDirection: 'row', borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.15)' },
+  examplePersonBox: { flex: 1, backgroundColor: 'rgba(255,255,255,0.03)', alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  examplePersonBoxAfter: { backgroundColor: 'rgba(148,227,54,0.06)' },
+  examplePhotoBadge: { position: 'absolute', top: 8, backgroundColor: 'rgba(13,27,46,0.8)', borderRadius: 7, paddingHorizontal: 7, paddingVertical: 2 },
+  examplePhotoBadgeText: { fontSize: 10, fontWeight: '700', color: '#dbe5f5' },
+  exampleDivider: { width: 2, backgroundColor: 'rgba(255,255,255,0.15)' },
+  exampleHandle: { position: 'absolute', top: '50%', left: '50%', width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.5)', marginLeft: -13, marginTop: -13, alignItems: 'center', justifyContent: 'center' },
   compareHint: { fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: 8 },
   thumb: { width: 62, height: 82, borderRadius: 10, borderWidth: 2, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: BG_LIGHT, overflow: 'hidden' },
   thumbDateWrap: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(13,27,46,0.75)', paddingVertical: 2 },

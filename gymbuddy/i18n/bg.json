@@ -598,7 +598,10 @@
     "int_solid": "Сериозно",
     "int_max": "На макс",
     "streakNow": "Серия от {{count}} дни!",
-    "partnerLoggedPush": "записа общата ви тренировка — запиши я и ти и запази серията! 🔥"
+    "partnerLoggedPush": "записа общата ви тренировка — запиши я и ти и запази серията! 🔥",
+    "stepsLabel": "Стъпки",
+    "stepsPlaceholder": "напр. 8500",
+    "stepsAuto": "Авто от часовника"
   },
   "trainingStatus": {
     "shareBtn": "Сподели",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Измервания на клиента",
     "clientLatest": "Последни измервания",
     "clientNoData": "Няма данни — клиентът още не е споделил или измерил нищо.",
-    "clientConsentNote": "Клиентът сподели тези данни с теб и може да оттегли достъпа по всяко време."
+    "clientConsentNote": "Клиентът сподели тези данни с теб и може да оттегли достъпа по всяко време.",
+    "photosExampleLabel": "Така ще изглежда сравнението",
+    "exampleBefore": "преди",
+    "exampleAfter": "след"
   },
   "plans": {
     "title": "Тренировъчни планове",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Още нямаш клиенти — можеш да изпращаш планове на хора, с които имаш треньорски чат в Студиото.",
     "assignedToast": "Планът е изпратен на {{name}}!",
     "assignPushBody": "приготви тренировъчен план за теб: „{{plan}}“",
-    "fromTrainer": "План от треньор {{name}}"
+    "fromTrainer": "План от треньор {{name}}",
+    "exampleSquat": "Клек с щанга",
+    "exampleBenchPress": "Лег преса",
+    "examplePlank": "Планк"
   },
   "leaderboard": {
     "title": "Местна класация",

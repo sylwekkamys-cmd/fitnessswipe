@@ -598,7 +598,10 @@
     "int_solid": "Solid",
     "int_max": "All-out",
     "streakNow": "{{count}}-day streak!",
-    "partnerLoggedPush": "logged your shared workout — log it too and keep your streak! 🔥"
+    "partnerLoggedPush": "logged your shared workout — log it too and keep your streak! 🔥",
+    "stepsLabel": "Steps",
+    "stepsPlaceholder": "e.g. 8500",
+    "stepsAuto": "Auto from watch"
   },
   "trainingStatus": {
     "shareBtn": "Share",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Client measurements",
     "clientLatest": "Latest measurements",
     "clientNoData": "No data — the client has not shared measurements yet or has not measured anything.",
-    "clientConsentNote": "The client shared this data with you and can revoke access at any time."
+    "clientConsentNote": "The client shared this data with you and can revoke access at any time.",
+    "photosExampleLabel": "This is how the comparison will look",
+    "exampleBefore": "before",
+    "exampleAfter": "after"
   },
   "plans": {
     "title": "Workout plans",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "No clients yet — you can send plans to people you have a trainer chat with in Studio.",
     "assignedToast": "Plan sent to {{name}}!",
     "assignPushBody": "prepared a workout plan for you: „{{plan}}”",
-    "fromTrainer": "Plan from trainer {{name}}"
+    "fromTrainer": "Plan from trainer {{name}}",
+    "exampleSquat": "Barbell squat",
+    "exampleBenchPress": "Bench press",
+    "examplePlank": "Plank"
   },
   "leaderboard": {
     "title": "Local ranking",

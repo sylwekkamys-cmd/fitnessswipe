@@ -53,6 +53,7 @@ type Workout = {
   notes: string
   rating: number
   partner?: { name: string }
+  steps?: number | null
 }
 
 export default function WorkoutsScreen() {
@@ -81,6 +82,8 @@ export default function WorkoutsScreen() {
   const [intensity, setIntensity] = useState('')
   const [showTimePicker, setShowTimePicker] = useState(false)
   const [successInfo, setSuccessInfo] = useState<{ streak: number; workout: Workout | null } | null>(null)
+  const [steps, setSteps] = useState('')
+  const [stepsAuto, setStepsAuto] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -127,6 +130,22 @@ export default function WorkoutsScreen() {
     setSelectedType('strength')
     setIntensity('')
     setEditingId(null)
+    setSteps('')
+    setStepsAuto(false)
+  }
+
+  // Kroki z zegarka/telefonu (Health Connect / Apple Health) dla wskazanego dnia —
+  // tylko podpowiedz, user moze nadpisac recznie
+  async function fetchStepsForDate(dayKey: string) {
+    try {
+      const { getStepsBetween } = await import('../lib/health')
+      const day = new Date(dayKey + 'T00:00:00')
+      const start = new Date(day); start.setHours(0, 0, 0, 0)
+      const end = new Date(day); end.setHours(23, 59, 59, 999)
+      const cappedEnd = end > new Date() ? new Date() : end
+      const val = await getStepsBetween(start, cappedEnd)
+      if (val !== null) { setSteps(String(val)); setStepsAuto(true) }
+    } catch (e) { }
   }
 
   // "Powtorz ostatni trening" — wypelnia formularz wartosciami z poprzedniego wpisu
@@ -159,6 +178,8 @@ export default function WorkoutsScreen() {
     setRating(w.rating || 5)
     setSelectedMatch((w as any).match_id ?? '')
     setIntensity((w as any).intensity ?? '')
+    setSteps(w.steps != null ? String(w.steps) : '')
+    setStepsAuto(false)
     setShowAddModal(true)
   }
 
@@ -177,6 +198,7 @@ export default function WorkoutsScreen() {
         notes: notes.trim(),
         rating,
         intensity,
+        steps: steps.trim() === '' ? null : (parseInt(steps) || null),
       }
       let savedWorkout: Workout | null = null
       let streak = 0
@@ -333,7 +355,7 @@ export default function WorkoutsScreen() {
             </View>
           </View>
           <Text style={styles.workoutDate}>
-            {showDate ? formatDate(workout.workout_date) : ''}{showDate && workout.workout_time ? ' · ' : ''}{workout.workout_time ?? ''} · ⭐ {workout.rating}/5{(workout as any).intensity ? ` · ${t('workouts.int_' + (workout as any).intensity)}` : ''}
+            {showDate ? formatDate(workout.workout_date) : ''}{showDate && workout.workout_time ? ' · ' : ''}{workout.workout_time ?? ''} · ⭐ {workout.rating}/5{(workout as any).intensity ? ` · ${t('workouts.int_' + (workout as any).intensity)}` : ''}{workout.steps ? ` · 👟 ${workout.steps.toLocaleString()}` : ''}
           </Text>
           {workout.notes ? <Text style={styles.workoutNotes} numberOfLines={2}>„{workout.notes}"</Text> : null}
         </View>
@@ -386,7 +408,9 @@ export default function WorkoutsScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.addBtn} onPress={() => {
           resetForm()
-          setSelectedDate(selectedDay || dateKey(new Date()))
+          const d = selectedDay || dateKey(new Date())
+          setSelectedDate(d)
+          fetchStepsForDate(d)
           setShowAddModal(true)
         }}>
           <Ionicons name="add" size={24} color="#fff" />
@@ -486,7 +510,7 @@ export default function WorkoutsScreen() {
               <View style={styles.daySection}>
                 <Text style={styles.daySectionTitle}>{formatDate(selectedDay)}</Text>
                 {dayWorkouts.length === 0 ? (
-                  <TouchableOpacity style={styles.addDayBtn} onPress={() => { setSelectedDate(selectedDay); setShowAddModal(true) }}>
+                  <TouchableOpacity style={styles.addDayBtn} onPress={() => { resetForm(); setSelectedDate(selectedDay); fetchStepsForDate(selectedDay); setShowAddModal(true) }}>
                     <Ionicons name="add-circle-outline" size={20} color={PRIMARY} />
                     <Text style={styles.addDayBtnText}>{t('workouts.addForDay')}</Text>
                   </TouchableOpacity>
@@ -507,7 +531,7 @@ export default function WorkoutsScreen() {
                 <Text style={styles.emptyIcon}>📅</Text>
                 <Text style={styles.emptyTitle}>{t('workouts.noWorkouts')}</Text>
                 <Text style={styles.emptySub}>{t('workouts.noWorkoutsSub')}</Text>
-                <TouchableOpacity style={styles.addFirstBtn} onPress={() => setShowAddModal(true)}>
+                <TouchableOpacity style={styles.addFirstBtn} onPress={() => { resetForm(); fetchStepsForDate(dateKey(new Date())); setShowAddModal(true) }}>
                   <Ionicons name="add" size={18} color="#fff" />
                   <Text style={styles.addFirstBtnText}>{t('workouts.addWorkout')}</Text>
                 </TouchableOpacity>
@@ -583,7 +607,14 @@ export default function WorkoutsScreen() {
                   value={new Date(selectedDate + 'T12:00:00')}
                   mode="date"
                   maximumDate={new Date()}
-                  onChange={(e: any, d?: Date) => { setShowDatePicker(false); if (d) setSelectedDate(dateKey(d)) }}
+                  onChange={(e: any, d?: Date) => {
+                    setShowDatePicker(false)
+                    if (d) {
+                      const key = dateKey(d)
+                      setSelectedDate(key)
+                      if (!editingId) fetchStepsForDate(key)
+                    }
+                  }}
                 />
               )}
               {showTimePicker && (
@@ -606,6 +637,24 @@ export default function WorkoutsScreen() {
                 minimumTrackTintColor={LIME}
                 maximumTrackTintColor="rgba(255,255,255,0.12)"
                 thumbTintColor={LIME}
+              />
+
+              <View style={styles.stepsHeaderRow}>
+                <Text style={styles.sectionLabel}>{t('workouts.stepsLabel')}</Text>
+                {stepsAuto && (
+                  <View style={styles.stepsAutoBadge}>
+                    <Ionicons name="watch-outline" size={11} color={LIME} />
+                    <Text style={styles.stepsAutoBadgeText}>{t('workouts.stepsAuto')}</Text>
+                  </View>
+                )}
+              </View>
+              <TextInput
+                style={styles.input}
+                value={steps}
+                onChangeText={v => { setSteps(v); setStepsAuto(false) }}
+                placeholder={t('workouts.stepsPlaceholder')}
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                keyboardType="numeric"
               />
 
               <Text style={styles.sectionLabel}>{t('workouts.intensityLabel')}</Text>
@@ -784,6 +833,9 @@ const styles = StyleSheet.create({
   repeatBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderColor: 'rgba(148,227,54,0.5)', borderStyle: 'dashed', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 14, backgroundColor: 'rgba(148,227,54,0.06)' },
   repeatBannerText: { flex: 1, fontSize: 12.5, fontWeight: '700', color: LIME },
   sectionLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8, marginTop: 4 },
+  stepsHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  stepsAutoBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(148,227,54,0.12)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, marginBottom: 8 },
+  stepsAutoBadgeText: { fontSize: 10, fontWeight: '700', color: LIME },
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
   typeTileWrap: { width: '31.5%' as any },
   typeTile: { borderRadius: 12, paddingVertical: 10, alignItems: 'center', gap: 3, position: 'relative', overflow: 'hidden' },

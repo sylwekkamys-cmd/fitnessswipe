@@ -598,7 +598,10 @@
     "int_solid": "Solide",
     "int_max": "Volles Brett",
     "streakNow": "{{count}}-Tage-Serie!",
-    "partnerLoggedPush": "hat euer gemeinsames Training geloggt — logg es auch und halte deine Serie! 🔥"
+    "partnerLoggedPush": "hat euer gemeinsames Training geloggt — logg es auch und halte deine Serie! 🔥",
+    "stepsLabel": "Schritte",
+    "stepsPlaceholder": "z. B. 8500",
+    "stepsAuto": "Automatisch von der Uhr"
   },
   "trainingStatus": {
     "shareBtn": "Teilen",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Messungen des Klienten",
     "clientLatest": "Neueste Messungen",
     "clientNoData": "Keine Daten — der Klient hat noch nichts geteilt oder gemessen.",
-    "clientConsentNote": "Der Klient hat diese Daten mit dir geteilt und kann die Freigabe jederzeit widerrufen."
+    "clientConsentNote": "Der Klient hat diese Daten mit dir geteilt und kann die Freigabe jederzeit widerrufen.",
+    "photosExampleLabel": "So wird der Vergleich aussehen",
+    "exampleBefore": "vorher",
+    "exampleAfter": "nachher"
   },
   "plans": {
     "title": "Trainingspläne",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Noch keine Klienten — Pläne kannst du an Personen senden, mit denen du einen Trainer-Chat im Studio hast.",
     "assignedToast": "Plan an {{name}} gesendet!",
     "assignPushBody": "hat einen Trainingsplan für dich erstellt: „{{plan}}“",
-    "fromTrainer": "Plan von Trainer {{name}}"
+    "fromTrainer": "Plan von Trainer {{name}}",
+    "exampleSquat": "Langhantel-Kniebeuge",
+    "exampleBenchPress": "Bankdrücken",
+    "examplePlank": "Unterarmstütz"
   },
   "leaderboard": {
     "title": "Lokales Ranking",

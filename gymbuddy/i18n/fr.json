@@ -598,7 +598,10 @@
     "int_solid": "Solide",
     "int_max": "À fond",
     "streakNow": "Série de {{count}} jours !",
-    "partnerLoggedPush": "a enregistré votre séance commune — enregistre-la aussi et garde ta série ! 🔥"
+    "partnerLoggedPush": "a enregistré votre séance commune — enregistre-la aussi et garde ta série ! 🔥",
+    "stepsLabel": "Pas",
+    "stepsPlaceholder": "ex. 8500",
+    "stepsAuto": "Auto depuis la montre"
   },
   "trainingStatus": {
     "shareBtn": "Partager",
@@ -1416,7 +1419,10 @@
     "clientMeasurements": "Mesures du client",
     "clientLatest": "Dernières mesures",
     "clientNoData": "Aucune donnée — le client n’a encore rien partagé ou mesuré.",
-    "clientConsentNote": "Le client a partagé ces données avec toi et peut révoquer l’accès à tout moment."
+    "clientConsentNote": "Le client a partagé ces données avec toi et peut révoquer l’accès à tout moment.",
+    "photosExampleLabel": "Voici à quoi ressemblera la comparaison",
+    "exampleBefore": "avant",
+    "exampleAfter": "après"
   },
   "plans": {
     "title": "Plans d'entraînement",
@@ -1455,7 +1461,10 @@
     "assignNoClients": "Pas encore de clients — tu peux envoyer des plans aux personnes avec qui tu as un chat coach dans le Studio.",
     "assignedToast": "Plan envoyé à {{name}} !",
     "assignPushBody": "a préparé un plan d'entraînement pour toi : « {{plan}} »",
-    "fromTrainer": "Plan du coach {{name}}"
+    "fromTrainer": "Plan du coach {{name}}",
+    "exampleSquat": "Squat à la barre",
+    "exampleBenchPress": "Développé couché",
+    "examplePlank": "Planche"
   },
   "leaderboard": {
     "title": "Classement local",
