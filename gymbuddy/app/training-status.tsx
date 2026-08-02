@@ -1108,7 +1108,7 @@ export default function TrainingStatusScreen() {
             {/* Filtry i efekty: pasek kolek do przewijania na dole (jak Instagram),
                 zamiast rozwijanej listy przy ikonie */}
             {hasMedia && (toolOpen === 'filters' || toolOpen === 'effects') && (
-              <View style={styles.bottomSwatchBar}>
+              <View style={[styles.bottomSwatchBar, { bottom: 100 + insets.bottom }]}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bottomSwatchContent}>
                   {toolOpen === 'filters' ? STATUS_FILTERS.map(f => (
                     <TouchableOpacity key={f || 'none'} style={styles.swatchItem} onPress={() => setFilterId(f)}>
@@ -1303,7 +1303,7 @@ export default function TrainingStatusScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
-        <View style={{ paddingBottom: 90 + insets.bottom }}>
+        <View style={{ paddingBottom: 24 + insets.bottom }}>
           {/* Ustawiony tekst / godzina / silownia — male pigulki informacyjne (edycja przez kolumne narzedzi) */}
           {(!!statusText.trim() || !!trainingTime || !!gymName) && (
             <View style={styles.metaChipsRow}>
@@ -1740,7 +1740,8 @@ const styles = StyleSheet.create({
   videoTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 12 },
   videoPausedOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   filterSwatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-  bottomSwatchBar: { position: 'absolute', left: 0, right: 0, bottom: 120, zIndex: 6 },
+  // "bottom" nadpisywany inline (100 + insets.bottom), zeby zawsze zostac nad przyciskiem Udostepnij
+  bottomSwatchBar: { position: 'absolute', left: 0, right: 0, zIndex: 6 },
   bottomSwatchContent: { paddingHorizontal: 16, gap: 14 },
   swatchItem: { alignItems: 'center', width: 56 },
   swatchCircle: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
