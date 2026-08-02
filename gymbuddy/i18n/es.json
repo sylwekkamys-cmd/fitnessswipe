@@ -736,7 +736,8 @@
     "countdownRemindMe": "Recuérdamelo",
     "countdownReminded": "Recordatorio activado",
     "countdownReminderTitle": "⏳ La cuenta atrás terminó",
-    "countdownReminderBody": "¡Se acabó el tiempo, échale un vistazo!"
+    "countdownReminderBody": "¡Se acabó el tiempo, échale un vistazo!",
+    "countdownCustom": "Tiempo personalizado…"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

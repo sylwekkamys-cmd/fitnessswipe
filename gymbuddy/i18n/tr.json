@@ -736,7 +736,8 @@
     "countdownRemindMe": "Bana hatırlat",
     "countdownReminded": "Hatırlatıcı ayarlandı",
     "countdownReminderTitle": "⏳ Geri sayım sona erdi",
-    "countdownReminderBody": "Süre doldu — bir bak!"
+    "countdownReminderBody": "Süre doldu — bir bak!",
+    "countdownCustom": "Özel süre…"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

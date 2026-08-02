@@ -736,7 +736,8 @@
     "countdownRemindMe": "Me le rappeler",
     "countdownReminded": "Rappel programmé",
     "countdownReminderTitle": "⏳ Le compte à rebours est terminé",
-    "countdownReminderBody": "C'est l'heure — jette un œil !"
+    "countdownReminderBody": "C'est l'heure — jette un œil !",
+    "countdownCustom": "Durée personnalisée…"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

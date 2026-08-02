@@ -736,7 +736,8 @@
     "countdownRemindMe": "Напомни ми",
     "countdownReminded": "Напомнянето е зададено",
     "countdownReminderTitle": "⏳ Обратното броене приключи",
-    "countdownReminderBody": "Времето изтече — виж какво става!"
+    "countdownReminderBody": "Времето изтече — виж какво става!",
+    "countdownCustom": "Персонализирано време…"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

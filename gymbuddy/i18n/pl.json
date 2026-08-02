@@ -736,7 +736,8 @@
     "countdownRemindMe": "Przypomnij mi",
     "countdownReminded": "Zaplanowano",
     "countdownReminderTitle": "⏳ Odliczanie się skończyło",
-    "countdownReminderBody": "Czas minął — sprawdź co u niej/niego!"
+    "countdownReminderBody": "Czas minął — sprawdź co u niej/niego!",
+    "countdownCustom": "Własny czas…"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

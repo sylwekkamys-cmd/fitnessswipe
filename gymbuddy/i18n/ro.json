@@ -736,7 +736,8 @@
     "countdownRemindMe": "Amintește-mi",
     "countdownReminded": "Memento setat",
     "countdownReminderTitle": "⏳ Numărătoarea s-a încheiat",
-    "countdownReminderBody": "Timpul a expirat — vezi ce se întâmplă!"
+    "countdownReminderBody": "Timpul a expirat — vezi ce se întâmplă!",
+    "countdownCustom": "Timp personalizat…"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

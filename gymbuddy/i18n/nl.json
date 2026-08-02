@@ -736,7 +736,8 @@
     "countdownRemindMe": "Herinner mij",
     "countdownReminded": "Herinnering ingesteld",
     "countdownReminderTitle": "⏳ Het aftellen is voorbij",
-    "countdownReminderBody": "Tijd is om — neem een kijkje!"
+    "countdownReminderBody": "Tijd is om — neem een kijkje!",
+    "countdownCustom": "Eigen tijd…"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

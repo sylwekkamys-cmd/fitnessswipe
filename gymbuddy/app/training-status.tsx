@@ -177,6 +177,10 @@ export default function TrainingStatusScreen() {
   const [showTimePicker, setShowTimePicker] = useState(false)
   const [timeHour, setTimeHour] = useState(18)
   const [timeMinute, setTimeMinute] = useState(0)
+  // Wlasny czas trwania odliczania (godziny + minuty, nie zegarek)
+  const [showCountdownPicker, setShowCountdownPicker] = useState(false)
+  const [cdHour, setCdHour] = useState(1)
+  const [cdMinute, setCdMinute] = useState(0)
   const [statusPhoto, setStatusPhoto] = useState<string | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   // Naklejki na relacji (przeciagalne pigulki: godzina / silownia) + filtr kolorystyczny
@@ -212,10 +216,6 @@ export default function TrainingStatusScreen() {
     else bgPlayer.pause()
     setVideoPaused(p => !p)
   }
-  const [isLive, setIsLive] = useState(false)
-  const [togglingLive, setTogglingLive] = useState(false)
-  const [lookingForPartner, setLookingForPartner] = useState(false)
-  const [notifyMatches, setNotifyMatches] = useState(true)
   const [showGymSearch, setShowGymSearch] = useState(false)
   const [gymQuery, setGymQuery] = useState('')
   const [gymResults, setGymResults] = useState<string[]>([])
@@ -274,7 +274,6 @@ export default function TrainingStatusScreen() {
         .order('created_at', { ascending: true })
       const stories = data ?? []
       setMyStories(stories)
-      setIsLive(stories.some((s: any) => s.is_live))
       setMode(stories.length > 0 ? 'overview' : 'editor')
       // Reakcje na moje relacje (licznik wspolny dla calego zestawu)
       const { data: rx } = await supabase
@@ -305,7 +304,6 @@ export default function TrainingStatusScreen() {
     setOverlays([])
     setFilterId('')
     setEffects([])
-    setLookingForPartner(false)
     setSelectedPreset(null)
     setMode('editor')
   }
@@ -320,6 +318,11 @@ export default function TrainingStatusScreen() {
   function decHour() { setTimeHour(h => (h - 1 + 24) % 24) }
   function incMinute() { setTimeMinute(m => (m + 5) % 60) }
   function decMinute() { setTimeMinute(m => (m - 5 + 60) % 60) }
+  // Czas trwania (nie zegarek) — bez zawijania, max 23h55m
+  function incCdHour() { setCdHour(h => Math.min(23, h + 1)) }
+  function decCdHour() { setCdHour(h => Math.max(0, h - 1)) }
+  function incCdMinute() { setCdMinute(m => Math.min(55, m + 5)) }
+  function decCdMinute() { setCdMinute(m => Math.max(0, m - 5)) }
 
   // Napis daty: dzien tygodnia w jezyku apki + DD.MM (tekst zapisany w naklejce w momencie dodania)
   function dayLabel() {
@@ -395,12 +398,12 @@ export default function TrainingStatusScreen() {
   }
   function addGifOverlay(url: string) {
     if (gifPickerKind === 'sticker') {
-      // Naklejki mozna dodac wiele naraz — kazda dostaje wlasne id do usuwania pojedynczo
       setOverlays(prev => [...prev, { type: 'sticker' as const, id: 'sticker' + Date.now() + Math.round(Math.random() * 1e6), stickerUrl: url, x: 0.3, y: 0.4, v: 0 }])
     } else {
       setOverlays(prev => [...prev.filter(o => o.type !== 'gif'), { type: 'gif' as const, gifUrl: url, x: 0.2, y: 0.35, v: 0 }])
-      setShowGifPicker(false)
     }
+    // Jak przy GIF-ie: jedna naklejka i panel sie chowa (kolejna wymaga ponownego otwarcia)
+    setShowGifPicker(false)
   }
   // Slider: pojedyncza naklejka na relacje (jak text/pr) — widzowie przeciagaja
   // buzie w StoryViewer, autor zobaczy srednia na liscie swoich relacji
@@ -682,88 +685,6 @@ export default function TrainingStatusScreen() {
     if (gymResults.length === 0 && !gymSearchLoading) searchGymsNearby()
   }
 
-  // Push do wszystkich matchy: "X jest teraz na silowni!"
-  async function notifyMyMatches(me: any) {
-    try {
-      const { data: matchData } = await supabase
-        .from('matches')
-        .select('profile_a_id, profile_b_id')
-        .or(`profile_a_id.eq.${me.id},profile_b_id.eq.${me.id}`)
-        .not('is_trainer_chat', 'is', true)
-      if (!matchData || matchData.length === 0) return
-      const { notifyProfile } = await import('../lib/notifications')
-      for (const m of matchData) {
-        const otherId = m.profile_a_id === me.id ? m.profile_b_id : m.profile_a_id
-        notifyProfile(otherId, '💪 ' + me.name, t('trainingStatus.liveNotifyBody') || 'jest teraz na siłowni!', { type: 'live' })
-      }
-    } catch (e) { console.log('notifyMyMatches error:', e) }
-  }
-
-  async function handleToggleLive() {
-    setTogglingLive(true)
-    try {
-      const me = await getMyProfile()
-      if (!me) return
-
-      if (isLive) {
-        await supabase.from('training_status').update({ is_live: false }).eq('profile_id', me.id)
-        setIsLive(false)
-        await loadStatus()
-        Alert.alert('👋', t('trainingStatus.sessionEnded') || 'Training session ended')
-      } else {
-        let gymLat: number | null = null
-        let gymLng: number | null = null
-        try {
-          const { status } = await Location.requestForegroundPermissionsAsync()
-          if (status === 'granted') {
-            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-            gymLat = loc.coords.latitude
-            gymLng = loc.coords.longitude
-          }
-        } catch (e) { }
-
-        // Bezpieczenstwo: automatyczne wylaczenie po 4h na wypadek zapomnienia
-        const expires_at = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString()
-
-        // Live doczepiamy do najnowszej aktywnej relacji; bez relacji tworzymy goly wpis live
-        const latest = myStories[myStories.length - 1]
-        if (latest) {
-          await supabase.from('training_status').update({
-            is_live: true,
-            gym_name: gymName.trim() || latest.gym_name,
-            gym_latitude: gymLat,
-            gym_longitude: gymLng,
-          }).eq('id', latest.id)
-        } else {
-          await supabase.from('training_status').insert({
-            profile_id: me.id,
-            status_text: statusText.trim() || (t('trainingStatus.defaultLiveText') || 'Training now!'),
-            training_time: trainingTime,
-            gym_name: gymName.trim(),
-            status_photo_url: statusPhoto ?? '',
-            video_url: videoUrl ?? '',
-            overlays,
-            filter: filterValue,
-            expires_at,
-            gym_latitude: gymLat,
-            gym_longitude: gymLng,
-            is_live: true,
-            looking_for_partner: lookingForPartner,
-            view_count: 0,
-          })
-        }
-        setIsLive(true)
-        await loadStatus()
-        if (notifyMatches) notifyMyMatches(me)
-        Alert.alert('💪', t('trainingStatus.sessionStarted') || "You're live! Others can see you're at the gym now.")
-      }
-    } catch (e: any) {
-      Alert.alert(t('common.error'), e?.message)
-    } finally {
-      setTogglingLive(false)
-    }
-  }
-
   async function handleSave() {
     // Relacja MUSI miec zdjecie lub wideo — teksty sa naklejkami na medium, nie sama trescia
     if (!statusPhoto && !videoUrl) {
@@ -810,7 +731,6 @@ export default function TrainingStatusScreen() {
         expires_at,
         gym_latitude: gymLat,
         gym_longitude: gymLng,
-        looking_for_partner: lookingForPartner,
         view_count: 0,
       })
       await loadStatus()
@@ -832,7 +752,6 @@ export default function TrainingStatusScreen() {
           await supabase.from('status_reactions').delete().eq('status_profile_id', me.id)
           await supabase.from('status_views').delete().eq('status_profile_id', me.id)
           setReactions({})
-          setIsLive(false)
         }
         await loadStatus()
       }}
@@ -1120,7 +1039,7 @@ export default function TrainingStatusScreen() {
         const hasMedia = !!(statusPhoto || videoUrl)
         const railTop = videoUrl ? 200 : 150
         // Presety ("Teksty") to naklejki na medium — bez zdjecia/wideo nie ma ich gdzie polozyc
-        const railItems = hasMedia ? ['filters', 'effects', 'stickers', 'activity', 'partner', 'presets'] : ['stickers', 'partner']
+        const railItems = hasMedia ? ['filters', 'effects', 'stickers', 'activity', 'presets'] : ['stickers']
         const panelTop = (k: string) => railTop + railItems.indexOf(k) * 66
         return (
           <>
@@ -1167,15 +1086,6 @@ export default function TrainingStatusScreen() {
                   <Text style={styles.toolLabel}>{t('activity.tool')}</Text>
                 </View>
               )}
-              <View style={styles.toolItem}>
-                <TouchableOpacity
-                  style={[styles.toolBtn, lookingForPartner && styles.toolBtnActive]}
-                  onPress={() => setLookingForPartner(v => !v)}
-                >
-                  <Ionicons name="people-outline" size={20} color={lookingForPartner ? LIME : '#fff'} />
-                </TouchableOpacity>
-                <Text style={styles.toolLabel}>{t('trainingStatus.toolPartner')}</Text>
-              </View>
               {hasMedia && (
                 <View style={styles.toolItem}>
                   <TouchableOpacity
@@ -1189,38 +1099,39 @@ export default function TrainingStatusScreen() {
               )}
             </View>
 
-            {hasMedia && toolOpen === 'filters' && (
-              <View style={[styles.toolPanel, { top: panelTop('filters'), maxHeight: 320 }]}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {STATUS_FILTERS.map(f => (
-                    <TouchableOpacity key={f || 'none'} style={styles.toolPanelRow} onPress={() => { setFilterId(f); setToolOpen(null) }}>
-                      <LinearGradient colors={FILTER_SWATCHES[f]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.filterSwatch} />
-                      <Text style={[styles.toolPanelText, filterId === f && { color: LIME, fontWeight: '800' }]}>
+            {/* Filtry i efekty: pasek kolek do przewijania na dole (jak Instagram),
+                zamiast rozwijanej listy przy ikonie */}
+            {hasMedia && (toolOpen === 'filters' || toolOpen === 'effects') && (
+              <View style={styles.bottomSwatchBar}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bottomSwatchContent}>
+                  {toolOpen === 'filters' ? STATUS_FILTERS.map(f => (
+                    <TouchableOpacity key={f || 'none'} style={styles.swatchItem} onPress={() => setFilterId(f)}>
+                      <LinearGradient
+                        colors={FILTER_SWATCHES[f]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                        style={[styles.swatchCircle, filterId === f && styles.swatchCircleActive]}
+                      />
+                      <Text style={[styles.swatchLabel, filterId === f && { color: LIME, fontWeight: '800' }]} numberOfLines={1}>
                         {t('trainingStatus.filter_' + (f || 'none'))}
                       </Text>
-                      {filterId === f && <Ionicons name="checkmark" size={14} color={LIME} />}
                     </TouchableOpacity>
-                  ))}
+                  )) : STATUS_EFFECTS.map(ef => {
+                    const active = effects.includes(ef)
+                    return (
+                      <TouchableOpacity
+                        key={ef}
+                        style={styles.swatchItem}
+                        onPress={() => setEffects(prev => active ? prev.filter(x => x !== ef) : [...prev, ef])}
+                      >
+                        <View style={[styles.swatchCircle, styles.swatchCircleEffect, active && styles.swatchCircleActive]}>
+                          <Ionicons name="sparkles" size={18} color={active ? BG : '#fff'} />
+                        </View>
+                        <Text style={[styles.swatchLabel, active && { color: LIME, fontWeight: '800' }]} numberOfLines={1}>
+                          {t('trainingStatus.effect_' + ef)}
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })}
                 </ScrollView>
-              </View>
-            )}
-
-            {/* Efekty: winieta/ramki — multi-select, mozna laczyc z filtrem */}
-            {hasMedia && toolOpen === 'effects' && (
-              <View style={[styles.toolPanel, { top: panelTop('effects') }]}>
-                {STATUS_EFFECTS.map(ef => {
-                  const active = effects.includes(ef)
-                  return (
-                    <TouchableOpacity
-                      key={ef}
-                      style={styles.toolPanelRow}
-                      onPress={() => setEffects(prev => active ? prev.filter(x => x !== ef) : [...prev, ef])}
-                    >
-                      <Text style={[styles.toolPanelText, active && { color: LIME, fontWeight: '800' }]}>{t('trainingStatus.effect_' + ef)}</Text>
-                      {active && <Ionicons name="checkmark" size={14} color={LIME} />}
-                    </TouchableOpacity>
-                  )
-                })}
               </View>
             )}
 
@@ -1329,6 +1240,9 @@ export default function TrainingStatusScreen() {
                     <Text style={styles.toolPanelText}>{t('trainingStatus.countdownIn')} {p.label}</Text>
                   </TouchableOpacity>
                 ))}
+                <TouchableOpacity style={styles.toolPanelRow} onPress={() => { setToolOpen(null); setShowCountdownPicker(true) }}>
+                  <Text style={styles.toolPanelText}>{t('trainingStatus.countdownCustom') || 'Własny czas…'}</Text>
+                </TouchableOpacity>
                 {overlays.some(o => o.type === 'countdown') && (
                   <TouchableOpacity
                     style={styles.toolPanelRow}
@@ -1403,26 +1317,6 @@ export default function TrainingStatusScreen() {
             )}
           </View>
         )}
-
-        {/* Live + powiadom matche */}
-        <View style={styles.liveRow}>
-          <TouchableOpacity style={[styles.livePill, isLive && styles.livePillActive]} onPress={handleToggleLive} disabled={togglingLive}>
-            {togglingLive ? <ActivityIndicator size="small" color="#fff" /> : (
-              <>
-                <View style={[styles.liveDot, isLive && styles.liveDotActive]} />
-                <Text style={styles.livePillText}>
-                  {isLive ? (t('trainingStatus.liveNow') || "You're live!") : (t('trainingStatus.imAtGym') || "I'm at the gym now")}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.notifyToggle} onPress={() => setNotifyMatches(v => !v)}>
-            <Ionicons name={notifyMatches ? 'notifications' : 'notifications-off-outline'} size={17} color={notifyMatches ? LIME : 'rgba(255,255,255,0.35)'} />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.notifyHint}>
-          {notifyMatches ? (t('trainingStatus.notifyMatchesOn') || 'Twoje matche dostaną powiadomienie, gdy przejdziesz w tryb live') : (t('trainingStatus.notifyMatchesOff') || 'Powiadomienia dla matchy wyłączone')}
-        </Text>
 
         {/* Udostepnij */}
         <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
@@ -1787,6 +1681,40 @@ export default function TrainingStatusScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Wlasny czas trwania odliczania (godziny + minuty od "teraz") */}
+      <Modal visible={showCountdownPicker} transparent animationType="fade" onRequestClose={() => setShowCountdownPicker(false)}>
+        <View style={styles.pickerOverlay}>
+          <View style={styles.pickerBox}>
+            <Text style={styles.pickerTitle}>{t('trainingStatus.stickerCountdown')}</Text>
+            <View style={styles.pickerRow}>
+              <View style={styles.pickerCol}>
+                <TouchableOpacity style={styles.pickerArrow} onPress={incCdHour}><Ionicons name="chevron-up" size={22} color={PRIMARY} /></TouchableOpacity>
+                <Text style={styles.pickerValue}>{pad(cdHour)}</Text>
+                <TouchableOpacity style={styles.pickerArrow} onPress={decCdHour}><Ionicons name="chevron-down" size={22} color={PRIMARY} /></TouchableOpacity>
+              </View>
+              <Text style={styles.pickerColon}>:</Text>
+              <View style={styles.pickerCol}>
+                <TouchableOpacity style={styles.pickerArrow} onPress={incCdMinute}><Ionicons name="chevron-up" size={22} color={PRIMARY} /></TouchableOpacity>
+                <Text style={styles.pickerValue}>{pad(cdMinute)}</Text>
+                <TouchableOpacity style={styles.pickerArrow} onPress={decCdMinute}><Ionicons name="chevron-down" size={22} color={PRIMARY} /></TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.pickerBtns}>
+              <TouchableOpacity style={styles.pickerCancel} onPress={() => setShowCountdownPicker(false)}>
+                <Text style={styles.pickerCancelText}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.pickerOk, cdHour === 0 && cdMinute === 0 && { opacity: 0.4 }]}
+                disabled={cdHour === 0 && cdMinute === 0}
+                onPress={() => { addCountdownOverlay(cdHour * 3600000 + cdMinute * 60000); setShowCountdownPicker(false) }}
+              >
+                <Text style={styles.pickerOkText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
@@ -1798,6 +1726,13 @@ const styles = StyleSheet.create({
   videoTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 12 },
   videoPausedOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   filterSwatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+  bottomSwatchBar: { position: 'absolute', left: 0, right: 0, bottom: 120, zIndex: 6 },
+  bottomSwatchContent: { paddingHorizontal: 16, gap: 14 },
+  swatchItem: { alignItems: 'center', width: 56 },
+  swatchCircle: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
+  swatchCircleActive: { borderColor: LIME },
+  swatchCircleEffect: { backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  swatchLabel: { fontSize: 10, color: 'rgba(255,255,255,0.75)', marginTop: 5, textAlign: 'center' },
   toolRail: { position: 'absolute', right: 16, alignItems: 'center', gap: 9, zIndex: 8 },
   toolItem: { alignItems: 'center', gap: 2 },
   toolLabel: { fontSize: 9.5, fontWeight: '700', color: 'rgba(255,255,255,0.85)', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3, lineHeight: 13 },
@@ -1855,14 +1790,6 @@ const styles = StyleSheet.create({
   metaChipsRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   metaChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', maxWidth: '70%' },
   metaChipText: { fontSize: 12, color: '#fff', fontWeight: '700', flexShrink: 1 },
-  liveRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14 },
-  livePill: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 22, paddingVertical: 11, borderWidth: 1.5, borderColor: 'rgba(125,197,46,0.6)', backgroundColor: 'rgba(125,197,46,0.12)' },
-  livePillActive: { borderColor: '#ff5050', backgroundColor: 'rgba(255,80,80,0.15)' },
-  livePillText: { fontSize: 13, color: '#fff', fontWeight: '700' },
-  liveDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: LIME },
-  liveDotActive: { backgroundColor: '#ff5050' },
-  notifyToggle: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
-  notifyHint: { fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 6, textAlign: 'center' },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: LIME, borderRadius: 16, paddingVertical: 14, marginTop: 10 },
   saveBtnDisabled: { opacity: 0.6 },
   saveBtnText: { fontSize: 15, fontWeight: '800', color: BG },

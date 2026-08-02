@@ -736,7 +736,8 @@
     "countdownRemindMe": "Erinnere mich",
     "countdownReminded": "Erinnerung gesetzt",
     "countdownReminderTitle": "⏳ Countdown ist vorbei",
-    "countdownReminderBody": "Die Zeit ist um — schau vorbei!"
+    "countdownReminderBody": "Die Zeit ist um — schau vorbei!",
+    "countdownCustom": "Eigene Zeit…"
   },
   "reportBlock": {
     "report": "Nutzer melden",

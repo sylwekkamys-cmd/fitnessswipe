@@ -68,6 +68,7 @@ export default function GymLiveMapScreen() {
   const [selectedGym, setSelectedGym] = useState<any>(null)
   const [isLive, setIsLive] = useState(false)
   const [togglingLive, setTogglingLive] = useState(false)
+  const [liveStatusId, setLiveStatusId] = useState<string | null>(null)
   const [storyIndex, setStoryIndex] = useState<number | null>(null)
   const [myReactions, setMyReactions] = useState<Record<string, string>>({})
   const [storyMuted, setStoryMuted] = useState(false)
@@ -219,22 +220,30 @@ export default function GymLiveMapScreen() {
       const me = await getMyProfile()
       setMyProfile(me)
       if (me) {
+        // Wiele relacji na profil jest dozwolone (multi-stories), wiec szukamy
+        // konkretnego wpisu z is_live=true zamiast zakladac jeden wiersz na profil
+        // (maybeSingle() rzucalby blad przy 2+ wierszach)
         const [statuses, myStatusRes] = await Promise.all([
           getActiveGymStatuses(me.id),
           supabase
             .from('training_status')
-            .select('is_live, expires_at')
+            .select('id, is_live, expires_at')
             .eq('profile_id', me.id)
-            .maybeSingle(),
+            .eq('is_live', true)
+            .gt('expires_at', new Date().toISOString())
+            .order('created_at', { ascending: false })
+            .limit(1),
         ])
         setGymGroups(groupStatusesByGym(statuses))
-        const myStatus = myStatusRes.data
-        if (myStatus && myStatus.is_live && new Date(myStatus.expires_at) > new Date()) {
+        const myStatus = myStatusRes.data?.[0]
+        if (myStatus) {
           setIsLive(true)
           setLiveExpiresAt(myStatus.expires_at)
+          setLiveStatusId(myStatus.id)
         } else {
           setIsLive(false)
           setLiveExpiresAt(null)
+          setLiveStatusId(null)
         }
       }
     } catch (e) {
@@ -259,8 +268,15 @@ export default function GymLiveMapScreen() {
     setTogglingLive(true)
     try {
       if (isLive) {
-        await supabase.from('training_status').update({ is_live: false }).eq('profile_id', myProfile.id)
+        // Stop znika natychmiast z mapy/listy live (is_live=false), ale NIE rusza
+        // expires_at — jesli live bylo doczepione do prawdziwej relacji ze zdjeciem,
+        // ta relacja ma zyc dalej swoim wlasnym czasem, nie zostac ucieta
+        if (liveStatusId) {
+          await supabase.from('training_status').update({ is_live: false }).eq('id', liveStatusId)
+        }
         setIsLive(false)
+        setLiveStatusId(null)
+        setLiveExpiresAt(null)
         Alert.alert('👋', t('trainingStatus.sessionEnded') || 'Training session ended')
         await loadData()
       } else {
@@ -277,23 +293,39 @@ export default function GymLiveMapScreen() {
 
         const expires_at = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString()
 
-        const { data: existing } = await supabase
+        // Wiele relacji na profil sa dozwolone — bez unikalnego ograniczenia
+        // na profile_id upsert-by-profile juz nie dziala. Doczepiamy live
+        // do najnowszej aktywnej relacji (jesli jest), inaczej tworzymy nowy,
+        // minimalny wpis tylko z flaga live.
+        const { data: existingRows } = await supabase
           .from('training_status')
-          .select('status_text, training_time, gym_name, status_photo_url')
+          .select('id')
           .eq('profile_id', myProfile.id)
-          .maybeSingle()
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1)
+        const existingId = existingRows?.[0]?.id
 
-        await supabase.from('training_status').upsert({
-          profile_id: myProfile.id,
-          status_text: existing?.status_text || (t('trainingStatus.defaultLiveText') || 'Training now!'),
-          training_time: existing?.training_time || '',
-          gym_name: existing?.gym_name || '',
-          status_photo_url: existing?.status_photo_url || '',
-          expires_at,
-          gym_latitude: gymLat,
-          gym_longitude: gymLng,
-          is_live: true,
-        }, { onConflict: 'profile_id' })
+        if (existingId) {
+          await supabase.from('training_status').update({
+            is_live: true, expires_at, gym_latitude: gymLat, gym_longitude: gymLng,
+          }).eq('id', existingId)
+          setLiveStatusId(existingId)
+        } else {
+          const { data: inserted } = await supabase.from('training_status').insert({
+            profile_id: myProfile.id,
+            status_text: t('trainingStatus.defaultLiveText') || 'Training now!',
+            training_time: '',
+            gym_name: '',
+            status_photo_url: '',
+            expires_at,
+            gym_latitude: gymLat,
+            gym_longitude: gymLng,
+            is_live: true,
+          }).select('id').single()
+          setLiveStatusId(inserted?.id ?? null)
+        }
+
         setIsLive(true)
         setLiveExpiresAt(expires_at)
         // Auto-zoom do mojej lokalizacji po starcie live

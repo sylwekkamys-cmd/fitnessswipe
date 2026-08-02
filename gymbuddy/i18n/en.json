@@ -736,7 +736,8 @@
     "countdownRemindMe": "Remind me",
     "countdownReminded": "Reminder set",
     "countdownReminderTitle": "⏳ Countdown is over",
-    "countdownReminderBody": "Time's up — check it out!"
+    "countdownReminderBody": "Time's up — check it out!",
+    "countdownCustom": "Custom time…"
   },
   "reportBlock": {
     "report": "Report user",
