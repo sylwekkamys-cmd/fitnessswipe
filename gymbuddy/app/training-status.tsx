@@ -1498,7 +1498,7 @@ export default function TrainingStatusScreen() {
         <View style={styles.sheetOverlay}>
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>{'👁️'} {t('trainingStatus.viewersTitle')}</Text>
+            <Text style={styles.sheetTitle}>{'👁️‍🗨️'} {t('trainingStatus.viewersTitle')}</Text>
             {viewersLoading ? (
               <ActivityIndicator color={PRIMARY} style={{ marginVertical: 24 }} />
             ) : (

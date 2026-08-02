@@ -382,7 +382,7 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
             <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setViewersOpen(false)} />
             <View style={styles.viewersSheet}>
               <View style={styles.viewersHandle} />
-              <Text style={styles.viewersTitle}>👁️ {t('trainingStatus.viewersTitle')}</Text>
+              <Text style={styles.viewersTitle}>👁️‍🗨️ {t('trainingStatus.viewersTitle')}</Text>
               {viewersLoading ? (
                 <ActivityIndicator color={PRIMARY} style={{ marginVertical: 24 }} />
               ) : (

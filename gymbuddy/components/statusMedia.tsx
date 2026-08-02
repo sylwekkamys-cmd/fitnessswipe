@@ -82,12 +82,12 @@ function SingleLayer({ id }: { id: string }) {
         </View>
       )
     case 'frame':
-      // Biale passe-partout: rama DOMYKA obraz (matowy margines zakrywa brzegi
-      // zdjecia jak w ramce na sciane), do tego cienka linia definiujaca okno
+      // Mrozone szklo: polprzezroczysty margines domyka obraz, ale zdjecie
+      // przeswituje — nie wyglada jak uciete na bialo; okno zamyka ostra linia
       return (
         <View style={s.fill} pointerEvents="none">
-          <View style={[s.matte, { borderColor: '#f5f2ea' }]} />
-          <View style={[s.matteLine, { borderColor: 'rgba(0,0,0,0.22)' }]} />
+          <View style={[s.matte, { borderColor: 'rgba(255,255,255,0.45)' }]} />
+          <View style={[s.matteLine, { borderColor: 'rgba(255,255,255,0.95)' }]} />
         </View>
       )
     case 'framegold':
