@@ -1363,7 +1363,8 @@
     "youLost": "Tu as perdu — l'heure de régler l'enjeu 😅",
     "draw": "Égalité !",
     "daysLeft": "{{count}} jours restants",
-    "lastDay": "dernier jour"
+    "lastDay": "dernier jour",
+    "pushDeclined": "a refusé ton défi"
   },
   "presence": {
     "title": "Aujourd'hui dans ta salle",

@@ -724,9 +724,14 @@ export default function ChatScreen() {
       const ok = await respondDuel(duel.id, accept)
       if (ok) {
         setDuel(await getDuel(String(matchId)))
-        if (accept && otherProfile && myProfile) {
+        if (otherProfile && myProfile) {
           const { notifyProfile } = await import('../../lib/notifications')
-          notifyProfile(otherProfile.id, `⚔️ ${myProfile.name}`, t('duel.pushAccepted'), { type: 'duel', matchId })
+          notifyProfile(
+            otherProfile.id,
+            `⚔️ ${myProfile.name}`,
+            accept ? t('duel.pushAccepted') : t('duel.pushDeclined'),
+            { type: 'duel', matchId }
+          )
         }
       }
     } finally { setDuelBusy(false) }

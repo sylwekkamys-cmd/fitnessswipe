@@ -1363,7 +1363,8 @@
     "youLost": "Ai pierdut duelul — e timpul să plătești 😅",
     "draw": "Egalitate!",
     "daysLeft": "{{count}} zile rămase",
-    "lastDay": "ultima zi"
+    "lastDay": "ultima zi",
+    "pushDeclined": "a refuzat provocarea ta"
   },
   "presence": {
     "title": "Azi la sala ta",

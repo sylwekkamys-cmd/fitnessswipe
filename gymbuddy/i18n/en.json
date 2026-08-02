@@ -1363,7 +1363,8 @@
     "youLost": "You lost the duel — time to pay up 😅",
     "draw": "It's a draw!",
     "daysLeft": "{{count}} days left",
-    "lastDay": "last day"
+    "lastDay": "last day",
+    "pushDeclined": "declined your challenge"
   },
   "presence": {
     "title": "Today at your gym",

@@ -791,8 +791,17 @@ export default function TrainingStatusScreen() {
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={PRIMARY} /></View>
 
   // ===== PRZEGLAD: aktywne relacje (bez edycji — usun / udostepnij / dodaj kolejna) =====
-  if (mode === 'overview') return (
-    <View style={styles.container}>
+  if (mode === 'overview') {
+    // Tlo CALEJ strony (nie pojedynczych kart): wlasne zdjecie profilowe, przyciemnione,
+    // zeby karty ponizej (polprzezroczyste) mialy spojny motyw zamiast plaskiego koloru
+    const pageBgUri = myProfileObj?.photo_urls?.[0]
+    return (
+    <ImageBackground
+      source={pageBgUri ? { uri: pageBgUri } : undefined}
+      style={styles.container}
+      blurRadius={18}
+    >
+      <View style={styles.ovPageScrim} pointerEvents="none" />
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.roundBtn} onPress={() => router.back()}>
           <Ionicons name="close" size={24} color="#fff" />
@@ -803,17 +812,8 @@ export default function TrainingStatusScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {myStories.map((story, idx) => {
-          // Tlo karty: zdjecie relacji, a przy wideo/samym tekscie — wlasne zdjecie profilowe
-          const bgUri = story.status_photo_url || myProfileObj?.photo_urls?.[0]
           return (
-          <ImageBackground
-            key={story.id}
-            source={bgUri ? { uri: bgUri } : undefined}
-            style={styles.ovCard}
-            imageStyle={styles.ovCardBgImage}
-            blurRadius={story.video_url ? 14 : 3}
-          >
-            <View style={styles.ovCardScrim} pointerEvents="none" />
+          <View key={story.id} style={styles.ovCard}>
             {/* Tap w miniature/tresc = pelnoekranowy podglad relacji */}
             <TouchableOpacity
               style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
@@ -852,7 +852,7 @@ export default function TrainingStatusScreen() {
                 <Ionicons name="trash-outline" size={18} color="#ff6b6b" />
               </TouchableOpacity>
             </View>
-          </ImageBackground>
+          </View>
           )
         })}
 
@@ -918,8 +918,9 @@ export default function TrainingStatusScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   )
+  }
 
   return (
     <View style={styles.container}>
@@ -1608,9 +1609,8 @@ const styles = StyleSheet.create({
   timeLeftText: { fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
   statsRow: { flexDirection: 'row', gap: 6 },
   statPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
-  ovCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: BG_LIGHT, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(148,227,54,0.22)', overflow: 'hidden' },
-  ovCardBgImage: { borderRadius: 18 },
-  ovCardScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,27,46,0.62)' },
+  ovPageScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,27,46,0.82)' },
+  ovCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(26,42,68,0.55)', borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   ovThumbWrap: { position: 'relative' },
   ovThumb: { width: 64, height: 84, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.3)' },
   ovThumbVideo: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#24405f' },

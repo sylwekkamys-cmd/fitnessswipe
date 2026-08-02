@@ -1363,7 +1363,8 @@
     "youLost": "Je hebt verloren — tijd om de inzet te betalen 😅",
     "draw": "Gelijkspel!",
     "daysLeft": "nog {{count}} dagen",
-    "lastDay": "laatste dag"
+    "lastDay": "laatste dag",
+    "pushDeclined": "wijst je uitdaging af"
   },
   "presence": {
     "title": "Vandaag in jouw sportschool",

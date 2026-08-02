@@ -1363,7 +1363,8 @@
     "youLost": "Przegrywasz pojedynek — czas uregulować stawkę 😅",
     "draw": "Remis!",
     "daysLeft": "zostały {{count}} dni",
-    "lastDay": "ostatni dzień"
+    "lastDay": "ostatni dzień",
+    "pushDeclined": "odrzuca Twoje wyzwanie"
   },
   "presence": {
     "title": "Dziś na Twojej siłowni",

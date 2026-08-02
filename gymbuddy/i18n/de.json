@@ -1363,7 +1363,8 @@
     "youLost": "Du hast verloren — Zeit, den Einsatz zu zahlen 😅",
     "draw": "Unentschieden!",
     "daysLeft": "noch {{count}} Tage",
-    "lastDay": "letzter Tag"
+    "lastDay": "letzter Tag",
+    "pushDeclined": "lehnt deine Herausforderung ab"
   },
   "presence": {
     "title": "Heute in deinem Gym",

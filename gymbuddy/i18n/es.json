@@ -1363,7 +1363,8 @@
     "youLost": "Perdiste el duelo — toca pagar la apuesta 😅",
     "draw": "¡Empate!",
     "daysLeft": "quedan {{count}} días",
-    "lastDay": "último día"
+    "lastDay": "último día",
+    "pushDeclined": "rechaza tu desafío"
   },
   "presence": {
     "title": "Hoy en tu gimnasio",

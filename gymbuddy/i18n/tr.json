@@ -1363,7 +1363,8 @@
     "youLost": "Düelloyu kaybettin — ödeme zamanı 😅",
     "draw": "Berabere!",
     "daysLeft": "{{count}} gün kaldı",
-    "lastDay": "son gün"
+    "lastDay": "son gün",
+    "pushDeclined": "meydan okumanı reddetti"
   },
   "presence": {
     "title": "Bugün senin salonunda",
