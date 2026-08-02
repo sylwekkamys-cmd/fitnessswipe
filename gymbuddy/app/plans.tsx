@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { router, useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
-import { getMyProfile, getWorkoutPlans, createWorkoutPlan, deleteWorkoutPlan, getTrainerClients, assignPlanToClient, addPlanExercise } from '../lib/supabase'
+import { getMyProfile, getWorkoutPlans, createWorkoutPlan, deleteWorkoutPlan, getTrainerClients, assignPlanToClient } from '../lib/supabase'
 
 const PRIMARY = '#7dc52e'
 const LIME = '#94e336'
@@ -72,20 +72,9 @@ export default function PlansScreen() {
       const id = await createWorkoutPlan(profileId, newName.trim())
       setShowCreate(false)
       setNewName('')
-      if (id) {
-        // Nowy plan startuje z przykladowymi cwiczeniami — punkt wyjscia do edycji,
-        // zeby pusta lista nie zniechecala od razu (mozna dowolnie skasowac/zmienic)
-        const examples: { name: string; kind: 'strength' | 'cardio' }[] = [
-          { name: t('plans.exampleSquat'), kind: 'strength' },
-          { name: t('plans.exampleBenchPress'), kind: 'strength' },
-          { name: t('plans.examplePlank'), kind: 'cardio' },
-        ]
-        for (let i = 0; i < examples.length; i++) {
-          await addPlanExercise(id, examples[i].name, i, examples[i].kind)
-        }
-        await load()
-        router.push(`/plan/${id}` as any)
-      }
+      // Nowy plan startuje pusty — podpowiedzi cwiczen sa w formularzu dodawania,
+      // nie ma potrzeby narzucac gotowych pozycji z gory
+      if (id) { await load(); router.push(`/plan/${id}` as any) }
     } finally { setCreating(false) }
   }
 
