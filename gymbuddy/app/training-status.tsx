@@ -1293,7 +1293,7 @@ export default function TrainingStatusScreen() {
       })()}
 
       <KeyboardAvoidingView
-        style={[styles.bottomWrap, { paddingBottom: 50 + insets.bottom }]}
+        style={[styles.bottomWrap, { paddingBottom: 90 + insets.bottom }]}
         pointerEvents="box-none"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
