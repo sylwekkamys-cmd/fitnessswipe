@@ -37,9 +37,9 @@ export function activityChips(act: ActivityData): { value: string; label: string
   if (isGym) {
     rows.push({ value: `${act.m} min`, label: 'CZAS', icon: 'time-outline' })
   } else {
-    rows.push({ value: `${act.m} km`, label: 'DYSTANS', icon: 'navigate-outline' })
+    rows.push({ value: `${act.m} km`, label: 'DYSTANS', icon: 'shuffle-outline' })
     if (act.tm) rows.push({ value: act.tm, label: 'CZAS', icon: 'time-outline' })
-    if (act.ex) rows.push({ value: act.ex, label: isRide ? 'PRĘDKOŚĆ' : 'TEMPO', icon: 'speedometer-outline' })
+    if (act.ex) rows.push({ value: act.ex, label: isRide ? 'PRĘDKOŚĆ' : 'TEMPO', icon: 'flash-outline' })
   }
   if (act.hr) rows.push({ value: `${act.hr} bpm`, label: 'TĘTNO ŚREDNIE', icon: 'heart-outline' })
   if (act.kcal) rows.push({ value: `${act.kcal} kcal`, label: 'KALORIE', icon: 'flame-outline' })

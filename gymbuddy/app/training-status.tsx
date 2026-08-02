@@ -1411,9 +1411,14 @@ export default function TrainingStatusScreen() {
       {/* Formularz naklejki aktywnosci: dystans/czas (silownia: czas/kalorie),
           prefill z dzisiejszego treningu w Apple Health / Health Connect */}
       <Modal visible={!!actSport} transparent animationType="slide" onRequestClose={() => setActSport(null)}>
-        <KeyboardAvoidingView style={styles.sheetOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView
+          style={styles.sheetOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        >
           <View style={styles.sheet}>
             <View style={styles.sheetHandle} />
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
             {/* Podglad naklejki NA ZYWO — dokladnie ta trafi na zdjecie */}
             {actSport && (() => {
@@ -1500,6 +1505,7 @@ export default function TrainingStatusScreen() {
             <TouchableOpacity style={{ alignItems: 'center', paddingVertical: 10 }} onPress={() => setActSport(null)}>
               <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
