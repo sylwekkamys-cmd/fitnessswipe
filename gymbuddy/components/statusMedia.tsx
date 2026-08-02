@@ -82,12 +82,12 @@ function SingleLayer({ id }: { id: string }) {
         </View>
       )
     case 'frame':
-      // Mrozone szklo: polprzezroczysty margines domyka obraz, ale zdjecie
-      // przeswituje — nie wyglada jak uciete na bialo; okno zamyka ostra linia
+      // Cienka biala obwodka przy SAMEJ krawedzi: domyka obraz bez pustego
+      // marginesu (rama biegnie po brzegu ekranu, zero odcietego zdjecia)
       return (
         <View style={s.fill} pointerEvents="none">
-          <View style={[s.matte, { borderColor: 'rgba(255,255,255,0.45)' }]} />
-          <View style={[s.matteLine, { borderColor: 'rgba(255,255,255,0.95)' }]} />
+          <View style={[s.edgeBorder, { borderColor: '#ffffff' }]} />
+          <View style={[s.edgeHairline, { borderColor: 'rgba(0,0,0,0.18)' }]} />
         </View>
       )
     case 'framegold':
@@ -260,6 +260,9 @@ const s = StyleSheet.create({
   matte: { ...StyleSheet.absoluteFillObject, borderWidth: 18, zIndex: 2 },
   matteLine: { position: 'absolute', top: 18, left: 18, right: 18, bottom: 18, borderWidth: 1.5, zIndex: 2 },
   matteGoldOuter: { position: 'absolute', top: 8, left: 8, right: 8, bottom: 8, borderWidth: 2.5, zIndex: 2 },
+  // Cienka rama przy krawedzi ekranu + wewnetrzny wlosek oddzielajacy od zdjecia
+  edgeBorder: { ...StyleSheet.absoluteFillObject, borderWidth: 7, zIndex: 2 },
+  edgeHairline: { position: 'absolute', top: 7, left: 7, right: 7, bottom: 7, borderWidth: 1, zIndex: 2 },
   bigText: {
     fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 0.5,
     textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,
