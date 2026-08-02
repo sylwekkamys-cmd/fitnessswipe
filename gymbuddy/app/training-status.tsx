@@ -297,11 +297,11 @@ export default function TrainingStatusScreen() {
   }
 
   // Czysty edytor na NOWA relacje (nigdy nie wypelniamy go opublikowana)
-  function startNewStory() {
-    if (myStories.length >= MAX_STORIES) {
-      Alert.alert('📚', t('trainingStatus.storiesLimit', { max: MAX_STORIES }))
-      return
-    }
+  // Czysci stan edytora (zdjecie/wideo/naklejki/filtr...) — wywolywane zarowno
+  // przy jawnym "+ Dodaj kolejna", jak i po publikacji/usunieciu ostatniej
+  // relacji, zeby stary skladany wpis nigdy nie zostal w pamieci i nie
+  // wyskoczyl z powrotem przy nastepnym wejsciu do edytora
+  function resetEditorFields() {
     setStatusText('')
     setTrainingTime('')
     setGymName('')
@@ -311,6 +311,14 @@ export default function TrainingStatusScreen() {
     setFilterId('')
     setEffects([])
     setSelectedPreset(null)
+  }
+
+  function startNewStory() {
+    if (myStories.length >= MAX_STORIES) {
+      Alert.alert('📚', t('trainingStatus.storiesLimit', { max: MAX_STORIES }))
+      return
+    }
+    resetEditorFields()
     setMode('editor')
   }
 
@@ -740,6 +748,9 @@ export default function TrainingStatusScreen() {
         view_count: 0,
       })
       await loadStatus()
+      // Opublikowane — czyscimy szkic edytora, zeby nie wskoczyl z powrotem
+      // przy nastepnym wejsciu (np. po usunieciu wszystkich relacji)
+      resetEditorFields()
       Alert.alert('✅', t('trainingStatus.statusSet'))
     } catch (e: any) {
       Alert.alert(t('common.error'), e?.message)
@@ -758,6 +769,9 @@ export default function TrainingStatusScreen() {
           await supabase.from('status_reactions').delete().eq('status_profile_id', me.id)
           await supabase.from('status_views').delete().eq('status_profile_id', me.id)
           setReactions({})
+          // Ostatnia relacja usunieta -> ekran wraca do edytora; bez tego
+          // wskoczylby tam stary, juz opublikowany skladany wpis
+          resetEditorFields()
         }
         await loadStatus()
       }}
