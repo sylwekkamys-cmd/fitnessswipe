@@ -292,15 +292,13 @@ const s = StyleSheet.create({
   },
   whitePillIcon: { fontSize: 14 },
   whitePillText: { fontSize: 14, fontWeight: '900', color: '#16233a', letterSpacing: 0.6 },
-  // Bez wypelnienia — biala cienka obwodka i przezroczysty srodek, zeby zdjecie
-  // pod spodem bylo w pelni widoczne (styl spojny z reszta naklejek w apce)
-  actCard: {
-    backgroundColor: 'transparent', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.85)',
-    borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, gap: 14,
-  },
+  // Zadnej plyty/ramki dookola — wiersze stoja luzem na zdjeciu,
+  // jedyna oprawa to biala obwodka samego kolka z ikona
+  actCard: { gap: 14 },
   actRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   actRowIconWrap: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.16)',
+    width: 40, height: 40, borderRadius: 20, backgroundColor: 'transparent',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.9)',
     alignItems: 'center', justifyContent: 'center',
   },
   actRowValue: {
