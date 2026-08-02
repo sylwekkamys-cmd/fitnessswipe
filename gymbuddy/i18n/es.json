@@ -743,7 +743,8 @@
     "effect_shadow": "Sombra inferior",
     "effect_sparkle": "Destellos",
     "effect_polaroid": "Polaroid",
-    "effect_film": "Cine"
+    "effect_film": "Cine",
+    "photoPreview": "Vista previa de la foto"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

@@ -743,7 +743,8 @@
     "effect_shadow": "Schaduw onder",
     "effect_sparkle": "Fonkeling",
     "effect_polaroid": "Polaroid",
-    "effect_film": "Bioscoop"
+    "effect_film": "Bioscoop",
+    "photoPreview": "Fotovoorbeeld"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

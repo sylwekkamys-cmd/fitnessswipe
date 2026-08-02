@@ -743,7 +743,8 @@
     "effect_shadow": "Umbră jos",
     "effect_sparkle": "Sclipici",
     "effect_polaroid": "Polaroid",
-    "effect_film": "Cinema"
+    "effect_film": "Cinema",
+    "photoPreview": "Previzualizare foto"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

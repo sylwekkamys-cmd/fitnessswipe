@@ -743,7 +743,8 @@
     "effect_shadow": "Сянка отдолу",
     "effect_sparkle": "Искри",
     "effect_polaroid": "Полароид",
-    "effect_film": "Кино"
+    "effect_film": "Кино",
+    "photoPreview": "Преглед на снимката"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

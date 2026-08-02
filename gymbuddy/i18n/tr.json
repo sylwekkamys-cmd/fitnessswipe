@@ -743,7 +743,8 @@
     "effect_shadow": "Alt gölge",
     "effect_sparkle": "Işıltı",
     "effect_polaroid": "Polaroid",
-    "effect_film": "Sinema"
+    "effect_film": "Sinema",
+    "photoPreview": "Fotoğraf önizleme"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

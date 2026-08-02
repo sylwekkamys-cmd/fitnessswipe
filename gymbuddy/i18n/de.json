@@ -743,7 +743,8 @@
     "effect_shadow": "Schatten unten",
     "effect_sparkle": "Funkeln",
     "effect_polaroid": "Polaroid",
-    "effect_film": "Kino"
+    "effect_film": "Kino",
+    "photoPreview": "Fotovorschau"
   },
   "reportBlock": {
     "report": "Nutzer melden",

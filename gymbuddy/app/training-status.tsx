@@ -969,13 +969,6 @@ export default function TrainingStatusScreen() {
       {/* Filtr kolorystyczny + efekty na zywo (jak IG) */}
       {(statusPhoto || videoUrl) && <FilterLayer id={filterValue} />}
 
-      <LinearGradient
-        colors={['rgba(13,27,46,0.75)', 'rgba(13,27,46,0.1)', 'rgba(13,27,46,0.96)']}
-        locations={[0, 0.35, 0.78]}
-        style={styles.bg}
-        pointerEvents="none"
-      />
-
       {/* Wideo: tapniecie w tlo pauzuje/wznawia odtwarzanie */}
       {videoUrl && (
         <Pressable style={StyleSheet.absoluteFill} onPress={toggleVideoPlay}>
@@ -1026,14 +1019,18 @@ export default function TrainingStatusScreen() {
         </View>
       </View>
 
-      {/* Znacznik wideo + kosz — POD gornym paskiem, nic sie nie naklada */}
-      {videoUrl && (
+      {/* Znacznik zdjecia/wideo + kosz — POD gornym paskiem, nic sie nie naklada.
+          Usuniecie pozwala wybrac inne medium zamiast musiec nadpisywac obecne */}
+      {(videoUrl || statusPhoto) && (
         <View style={styles.videoTopRow}>
           <View style={styles.videoBadge}>
-            <Ionicons name="videocam" size={13} color="#fff" />
-            <Text style={styles.videoBadgeText}>{t('trainingStatus.videoPreview')}</Text>
+            <Ionicons name={videoUrl ? 'videocam' : 'image'} size={13} color="#fff" />
+            <Text style={styles.videoBadgeText}>{videoUrl ? t('trainingStatus.videoPreview') : t('trainingStatus.photoPreview')}</Text>
           </View>
-          <TouchableOpacity style={styles.videoRemoveBtn} onPress={() => { setVideoUrl(null); setVideoPaused(false) }}>
+          <TouchableOpacity
+            style={styles.videoRemoveBtn}
+            onPress={() => { if (videoUrl) { setVideoUrl(null); setVideoPaused(false) } else { setStatusPhoto(null) } }}
+          >
             <Ionicons name="trash-outline" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
