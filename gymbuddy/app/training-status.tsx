@@ -453,8 +453,12 @@ export default function TrainingStatusScreen() {
     setOverlays(prev => prev.map(o => (ovKey(o) === ovKey(ov) ? { ...o, x, y } : o)))
   }
   function removeOverlay(ov: Overlay) {
-    // Usuniecie jednego zetonu aktywnosci zdejmuje cala naklejke (pol statystyk nie ma sensu)
-    if (ov.type === 'activity') { setOverlays(prev => prev.filter(o => o.type !== 'activity')); return }
+    if (ov.type === 'activity') {
+      // Rozsypane zetony maja wlasne id — usuwamy tylko ten jeden. Niesrozsypana
+      // (sklejona) naklejka to pojedynczy wpis bez id, wiec usuwa sie cala.
+      setOverlays(prev => prev.filter(o => !(o.type === 'activity' && (ov.id ? o.id === ov.id : true))))
+      return
+    }
     toggleOverlay(ov.type)
   }
   function cycleOverlay(ov: Overlay) {
