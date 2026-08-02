@@ -117,7 +117,7 @@ function StickerPill({ ov, time, gym, area, onChange, onCycle, onRemove, onScale
       <View style={{ transform: [{ scale: ov.s ?? 1 }] }}>
         <StickerContent
           type={ov.type} variant={ov.v} time={time} gym={gym} text={ov.text}
-          act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex } : null}
+          act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null}
           sportLabel={ov.text ?? undefined}
           chipIndex={ov.chip}
         />
@@ -462,13 +462,18 @@ export default function TrainingStatusScreen() {
       const act = ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null
       if (!act) return
       if (ov.chip == null) {
-        // Duzy napis -> rozsyp na osobne, niezaleznie przeciagane zetony
+        // Duzy napis -> rozsyp na osobne, niezaleznie przeciagane zetony.
+        // Odstep liczony dynamicznie z liczby zetonow (3-5), zeby przy nowych
+        // polach (tetno/kalorie) nie nachodzily na siebie poza prawa krawedzia
         const chips = activityChips(act)
+        const n = chips.length
+        const spacing = n > 1 ? Math.min(0.19, 0.76 / (n - 1)) : 0
+        const startX = Math.max(0.02, Math.min(ov.x, 0.78 - spacing * (n - 1)))
         const spread = chips.map((_, i) => ({
           ...ov,
           id: 'act' + i,
           chip: i,
-          x: Math.min(0.78, Math.max(0.02, ov.x + i * 0.19)),
+          x: startX + i * spacing,
           y: Math.min(0.85, Math.max(0.05, ov.y + (i % 2 === 1 ? 0.06 : 0))),
           v: 1,
         }))
@@ -1430,7 +1435,7 @@ export default function TrainingStatusScreen() {
             <View style={styles.actInputsRow}>
               {actSport !== 'gym' && (
                 <View style={styles.actInputBox}>
-                  <Text style={styles.actInputLabel}>{t('activity.distKm')}</Text>
+                  <Text style={styles.actInputLabel}>🧭 {t('activity.distKm')}</Text>
                   <TextInput
                     style={styles.actInput}
                     value={actDist}
@@ -1444,7 +1449,7 @@ export default function TrainingStatusScreen() {
                 </View>
               )}
               <View style={styles.actInputBox}>
-                <Text style={styles.actInputLabel}>{t('activity.timeMin')}</Text>
+                <Text style={styles.actInputLabel}>⏱️ {t('activity.timeMin')}</Text>
                 <TextInput
                   style={styles.actInput}
                   value={actMins}
@@ -1459,7 +1464,7 @@ export default function TrainingStatusScreen() {
             </View>
             <View style={[styles.actInputsRow, { marginTop: 8 }]}>
               <View style={styles.actInputBox}>
-                <Text style={styles.actInputLabel}>{t('activity.kcalOpt')}</Text>
+                <Text style={styles.actInputLabel}>🔥 {t('activity.kcalOpt')}</Text>
                 <TextInput
                   style={styles.actInput}
                   value={actKcal}
@@ -1471,7 +1476,7 @@ export default function TrainingStatusScreen() {
                 />
               </View>
               <View style={styles.actInputBox}>
-                <Text style={styles.actInputLabel}>{t('activity.hrOpt')}</Text>
+                <Text style={styles.actInputLabel}>❤️ {t('activity.hrOpt')}</Text>
                 <TextInput
                   style={styles.actInput}
                   value={actHr}
