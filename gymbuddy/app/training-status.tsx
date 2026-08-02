@@ -799,7 +799,8 @@ export default function TrainingStatusScreen() {
     <ImageBackground
       source={pageBgUri ? { uri: pageBgUri } : undefined}
       style={styles.container}
-      blurRadius={18}
+      resizeMode="cover"
+      blurRadius={8}
     >
       <View style={styles.ovPageScrim} pointerEvents="none" />
       <View style={styles.topBar}>

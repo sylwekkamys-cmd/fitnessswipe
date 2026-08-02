@@ -8,6 +8,7 @@ import {
   deletePlanExercise, resetPlanChecks, updatePlanRest, logWorkoutToday,
 } from '../../lib/supabase'
 import type { PlanExercise, PlanSet } from '../../lib/supabase'
+import { EXERCISE_LIBRARY, EXERCISE_CATEGORIES } from '../../lib/exerciseLibrary'
 
 const PRIMARY = '#7dc52e'
 const LIME = '#94e336'
@@ -26,6 +27,8 @@ export default function PlanScreen() {
   const [showAdd, setShowAdd] = useState(false)
   const [newExName, setNewExName] = useState('')
   const [newExKind, setNewExKind] = useState<'strength' | 'cardio'>('strength')
+  // Podpowiedzi z biblioteki popularnych cwiczen — user moze tapnac albo zignorowac i wpisac swoje
+  const [libCategory, setLibCategory] = useState<string>('chest')
   const [finishing, setFinishing] = useState(false)
   // Timer przerwy miedzy seriami
   const [restLeft, setRestLeft] = useState(0)
@@ -324,7 +327,7 @@ export default function PlanScreen() {
                   <TouchableOpacity
                     key={k}
                     style={[styles.kindChip, active && { borderColor: accent, backgroundColor: k === 'strength' ? 'rgba(148,227,54,0.12)' : 'rgba(79,195,247,0.12)' }]}
-                    onPress={() => setNewExKind(k)}
+                    onPress={() => { setNewExKind(k); setLibCategory(k === 'cardio' ? 'cardio' : 'chest') }}
                   >
                     <Ionicons name={k === 'strength' ? 'barbell' : 'pulse'} size={16} color={active ? accent : 'rgba(255,255,255,0.5)'} />
                     <Text style={[styles.kindChipText, active && { color: accent }]}>
@@ -334,6 +337,40 @@ export default function PlanScreen() {
                 )
               })}
             </View>
+            <Text style={styles.libLabel}>{t('plans.pickFromList')}</Text>
+            {newExKind === 'strength' && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.libCatRow}>
+                {EXERCISE_CATEGORIES.filter(c => c !== 'cardio').map(cat => (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[styles.libCatChip, libCategory === cat && styles.libCatChipActive]}
+                    onPress={() => setLibCategory(cat)}
+                  >
+                    <Text style={[styles.libCatChipText, libCategory === cat && styles.libCatChipTextActive]}>
+                      {t('plans.exLib.cat.' + cat)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+            <ScrollView style={styles.libListWrap} showsVerticalScrollIndicator={false}>
+              <View style={styles.libPillsWrap}>
+                {EXERCISE_LIBRARY.filter(ex => ex.kind === newExKind && ex.category === libCategory).map(ex => {
+                  const label = t('plans.exLib.name.' + ex.id)
+                  const picked = newExName === label
+                  return (
+                    <TouchableOpacity
+                      key={ex.id}
+                      style={[styles.libPill, picked && styles.libPillActive]}
+                      onPress={() => setNewExName(label)}
+                    >
+                      <Text style={[styles.libPillText, picked && styles.libPillTextActive]}>{label}</Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
+            </ScrollView>
+            <Text style={styles.libLabel}>{t('plans.orTypeOwn')}</Text>
             <TextInput
               style={styles.sheetInput}
               value={newExName}
@@ -341,7 +378,6 @@ export default function PlanScreen() {
               placeholder={newExKind === 'cardio' ? t('plans.cardioPlaceholder') : t('plans.exercisePlaceholder')}
               placeholderTextColor="rgba(255,255,255,0.3)"
               maxLength={60}
-              autoFocus
             />
             <TouchableOpacity style={[styles.sheetSaveBtn, !newExName.trim() && { opacity: 0.4 }]} onPress={handleAddExercise} disabled={!newExName.trim()}>
               <Text style={styles.sheetSaveText}>{t('plans.add')}</Text>
@@ -408,4 +444,16 @@ const styles = StyleSheet.create({
   kindRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   kindChip: { flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 7, borderRadius: 12, paddingVertical: 10, alignItems: 'center', backgroundColor: BG, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
   kindChipText: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.6)' },
+  libLabel: { fontSize: 10.5, fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8, marginTop: 4 },
+  libCatRow: { gap: 6, paddingBottom: 8 },
+  libCatChip: { borderRadius: 10, paddingHorizontal: 11, paddingVertical: 6, backgroundColor: BG, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  libCatChipActive: { backgroundColor: 'rgba(148,227,54,0.15)', borderColor: LIME },
+  libCatChipText: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.55)' },
+  libCatChipTextActive: { color: LIME },
+  libListWrap: { maxHeight: 130, marginBottom: 10 },
+  libPillsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  libPill: { borderRadius: 10, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: BG, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  libPillActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
+  libPillText: { fontSize: 12.5, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
+  libPillTextActive: { color: BG, fontWeight: '800' },
 })
