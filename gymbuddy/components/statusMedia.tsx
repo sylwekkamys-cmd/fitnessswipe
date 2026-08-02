@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, Animated } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
 
 // ============================================================
 // Wspolne elementy wizualne relacji: filtry kolorystyczne (tinty)
@@ -27,21 +28,22 @@ export const ACTIVITY_SPORTS = [
 ] as const
 
 // Wiersze statystyk budowane z danych aktywnosci (do 5 sztuk zaleznie od pol,
-// kazdy niezaleznie przeciagany po rozsypaniu — patrz cycleOverlay). Emoji
-// dokladnie takie same jak przy recznym wpisywaniu w formularzu.
+// kazdy niezaleznie przeciagany po rozsypaniu — patrz cycleOverlay). Ikony
+// Ionicons w kolku (Wariant 1) — formularz recznego wpisywania ma wlasne
+// emoji dopasowane DO tych ikon, nie odwrotnie.
 export function activityChips(act: ActivityData): { value: string; label: string; icon: string }[] {
   const isGym = act.sport === 'gym'
   const isRide = act.sport === 'ride'
   const rows: { value: string; label: string; icon: string }[] = []
   if (isGym) {
-    rows.push({ value: `${act.m} min`, label: 'CZAS', icon: '⏱️' })
+    rows.push({ value: `${act.m} min`, label: 'CZAS', icon: 'time-outline' })
   } else {
-    rows.push({ value: `${act.m} km`, label: 'DYSTANS', icon: '🧭' })
-    if (act.tm) rows.push({ value: act.tm, label: 'CZAS', icon: '⏱️' })
-    if (act.ex) rows.push({ value: act.ex, label: isRide ? 'PRĘDKOŚĆ' : 'TEMPO', icon: '⚡' })
+    rows.push({ value: `${act.m} km`, label: 'DYSTANS', icon: 'shuffle-outline' })
+    if (act.tm) rows.push({ value: act.tm, label: 'CZAS', icon: 'time-outline' })
+    if (act.ex) rows.push({ value: act.ex, label: isRide ? 'PRĘDKOŚĆ' : 'TEMPO', icon: 'flash-outline' })
   }
-  if (act.hr) rows.push({ value: `${act.hr} bpm`, label: 'TĘTNO ŚREDNIE', icon: '❤️' })
-  if (act.kcal) rows.push({ value: `${act.kcal} kcal`, label: 'KALORIE', icon: '🔥' })
+  if (act.hr) rows.push({ value: `${act.hr} bpm`, label: 'TĘTNO ŚREDNIE', icon: 'heart-outline' })
+  if (act.kcal) rows.push({ value: `${act.kcal} kcal`, label: 'KALORIE', icon: 'flame-outline' })
   return rows
 }
 
@@ -144,12 +146,13 @@ export const FILTER_SWATCHES: Record<string, [string, string]> = {
   fade: ['#f2f2f6', '#b9b9c4'],
 }
 
-// Pojedynczy wiersz statystyki: emoji + wartosc z jednostka + podpis (bez tla —
-// czytelnosc na zdjeciu zapewnia cien pod tekstem, nie plyta pod spodem)
+// Pojedynczy wiersz statystyki: biala ikona w kolku + wartosc z jednostka + podpis
 function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }) {
   return (
     <View style={s.actRow}>
-      <Text style={s.actRowEmoji}>{r.icon}</Text>
+      <View style={s.actRowIconWrap}>
+        <Ionicons name={r.icon as any} size={19} color="#fff" />
+      </View>
       <View>
         <Text style={s.actRowValue} numberOfLines={1}>{r.value}</Text>
         <Text style={s.actRowLabel} numberOfLines={1}>{r.label}</Text>
@@ -296,9 +299,9 @@ const s = StyleSheet.create({
     borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, gap: 14,
   },
   actRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  actRowEmoji: {
-    fontSize: 22, width: 30, textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4,
+  actRowIconWrap: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center', justifyContent: 'center',
   },
   actRowValue: {
     fontSize: 19, fontWeight: '800', color: '#fff',

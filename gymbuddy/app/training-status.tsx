@@ -1444,7 +1444,7 @@ export default function TrainingStatusScreen() {
             <View style={styles.actInputsRow}>
               {actSport !== 'gym' && (
                 <View style={styles.actInputBox}>
-                  <Text style={styles.actInputLabel}>🧭 {t('activity.distKm')}</Text>
+                  <Text style={styles.actInputLabel}>🔀 {t('activity.distKm')}</Text>
                   <TextInput
                     style={styles.actInput}
                     value={actDist}
