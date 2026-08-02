@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Стикери",
     "stickerSearchPlaceholder": "Търсене на стикери…",
-    "stickerSlider": "Плъзгач"
+    "stickerSlider": "Плъзгач",
+    "stickerCountdown": "Обратно броене",
+    "countdownIn": "След",
+    "countdownRemindMe": "Напомни ми",
+    "countdownReminded": "Напомнянето е зададено",
+    "countdownReminderTitle": "⏳ Обратното броене приключи",
+    "countdownReminderBody": "Времето изтече — виж какво става!"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

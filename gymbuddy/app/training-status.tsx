@@ -31,7 +31,16 @@ const STATUS_PRESET_ICONS = [
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
 // id + chip = pojedynczy zeton po rozsypaniu (kazdy przeciagany osobno)
-type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string }
+type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider' | 'countdown'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string; countdownTarget?: string }
+
+// Presety czasu docelowego dla naklejki odliczania (ms od teraz)
+const COUNTDOWN_PRESETS = [
+  { label: '30 min', ms: 30 * 60000 },
+  { label: '1 godz.', ms: 60 * 60000 },
+  { label: '3 godz.', ms: 3 * 3600000 },
+  { label: '6 godz.', ms: 6 * 3600000 },
+  { label: '24 godz.', ms: 24 * 3600000 },
+] as const
 
 // Przeciagalna naklejka (styl IG): pozycja znormalizowana 0..1 wzgledem obszaru medium.
 // Przeciaganie = zmiana pozycji, tapniecie = zmiana stylu (3 warianty), ✕ = usuniecie,
@@ -123,6 +132,7 @@ function StickerPill({ ov, time, gym, area, onChange, onCycle, onRemove, onScale
           gifUrl={ov.gifUrl}
           stickerUrl={ov.stickerUrl}
           sliderEmoji={ov.sliderEmoji}
+          countdownTarget={ov.countdownTarget}
         />
       </View>
       <TouchableOpacity style={stickerStyles.removeBtn} onPress={onRemove} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
@@ -177,7 +187,7 @@ export default function TrainingStatusScreen() {
   const [effects, setEffects] = useState<string[]>([])
   const filterValue = [filterId, ...effects].filter(Boolean).join('|')
   // Kolumna narzedzi po prawej (jak IG): zwiniete ikony, tap rozwija panel obok
-  const [toolOpen, setToolOpen] = useState<'filters' | 'effects' | 'stickers' | 'time' | 'presets' | 'activity' | 'slider' | null>(null)
+  const [toolOpen, setToolOpen] = useState<'filters' | 'effects' | 'stickers' | 'time' | 'presets' | 'activity' | 'slider' | 'countdown' | null>(null)
   // Naklejka aktywnosci: wybrany sport otwiera formularz (prefill z Apple Health / Health Connect)
   const [actSport, setActSport] = useState<string | null>(null)
   const [actDist, setActDist] = useState('')
@@ -396,6 +406,13 @@ export default function TrainingStatusScreen() {
   // buzie w StoryViewer, autor zobaczy srednia na liscie swoich relacji
   function addSliderOverlay(emoji: string) {
     setOverlays(prev => [...prev.filter(o => o.type !== 'slider'), { type: 'slider' as const, sliderEmoji: emoji, x: 0.2, y: 0.45, v: 0 }])
+    setToolOpen(null)
+  }
+  // Odliczanie: pojedyncza naklejka na relacje, cel liczony od chwili dodania —
+  // widzowie moga ustawic sobie lokalne przypomnienie (StoryViewer)
+  function addCountdownOverlay(ms: number) {
+    const target = new Date(Date.now() + ms).toISOString()
+    setOverlays(prev => [...prev.filter(o => o.type !== 'countdown'), { type: 'countdown' as const, countdownTarget: target, x: 0.24, y: 0.4, v: 0 }])
     setToolOpen(null)
   }
 
@@ -1132,10 +1149,10 @@ export default function TrainingStatusScreen() {
               )}
               <View style={styles.toolItem}>
                 <TouchableOpacity
-                  style={[styles.toolBtn, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider') && styles.toolBtnActive]}
-                  onPress={() => setToolOpen(o => (o === 'stickers' || o === 'time' || o === 'slider' ? null : 'stickers'))}
+                  style={[styles.toolBtn, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider' || toolOpen === 'countdown') && styles.toolBtnActive]}
+                  onPress={() => setToolOpen(o => (o === 'stickers' || o === 'time' || o === 'slider' || o === 'countdown' ? null : 'stickers'))}
                 >
-                  <Text style={[styles.toolBtnAa, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider' || overlays.length > 0) && { color: LIME }]}>Aa</Text>
+                  <Text style={[styles.toolBtnAa, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider' || toolOpen === 'countdown' || overlays.length > 0) && { color: LIME }]}>Aa</Text>
                 </TouchableOpacity>
                 <Text style={styles.toolLabel}>{t('trainingStatus.toolStickers')}</Text>
               </View>
@@ -1211,7 +1228,7 @@ export default function TrainingStatusScreen() {
                 Bez medium ustawiaja tylko pola statusu; reszta to czyste naklejki, wiec wymaga medium. */}
             {toolOpen === 'stickers' && (
               <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
-                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif', 'sticker', 'slider'] as const) : (['time', 'gym'] as const)).map(tp => {
+                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif', 'sticker', 'slider', 'countdown'] as const) : (['time', 'gym'] as const)).map(tp => {
                   const active = overlays.some(o => o.type === tp)
                   const label =
                     tp === 'time' ? t('trainingStatus.stickerTime')
@@ -1222,11 +1239,13 @@ export default function TrainingStatusScreen() {
                     : tp === 'pr' ? t('trainingStatus.stickerPr')
                     : tp === 'gif' ? t('trainingStatus.stickerGif')
                     : tp === 'sticker' ? t('trainingStatus.stickerSticker')
-                    : t('trainingStatus.stickerSlider')
+                    : tp === 'slider' ? t('trainingStatus.stickerSlider')
+                    : t('trainingStatus.stickerCountdown')
                   const onPress = () => {
                     if (tp === 'gif') { setToolOpen(null); openGifPicker('gif'); return }
                     if (tp === 'sticker') { setToolOpen(null); openGifPicker('sticker'); return }
                     if (tp === 'slider') { setToolOpen('slider'); return }
+                    if (tp === 'countdown') { setToolOpen('countdown'); return }
                     if (active) { toggleOverlay(tp); setToolOpen(null); return }
                     if (tp === 'time') { setToolOpen('time'); return }
                     if (tp === 'gym') { setToolOpen(null); openGymSearch(); return }
@@ -1294,6 +1313,26 @@ export default function TrainingStatusScreen() {
                   <TouchableOpacity
                     style={styles.toolPanelRow}
                     onPress={() => { setOverlays(prev => prev.filter(o => o.type !== 'slider')); setToolOpen(null) }}
+                  >
+                    <Ionicons name="trash-outline" size={14} color="#ff6b6b" />
+                    <Text style={[styles.toolPanelText, { color: '#ff6b6b' }]}>{t('trainingStatus.delete')}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            {/* Odliczanie: cel liczony od "teraz" (za 30 min, za 1h...) */}
+            {toolOpen === 'countdown' && (
+              <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
+                {COUNTDOWN_PRESETS.map(p => (
+                  <TouchableOpacity key={p.label} style={styles.toolPanelRow} onPress={() => addCountdownOverlay(p.ms)}>
+                    <Text style={styles.toolPanelText}>{t('trainingStatus.countdownIn')} {p.label}</Text>
+                  </TouchableOpacity>
+                ))}
+                {overlays.some(o => o.type === 'countdown') && (
+                  <TouchableOpacity
+                    style={styles.toolPanelRow}
+                    onPress={() => { setOverlays(prev => prev.filter(o => o.type !== 'countdown')); setToolOpen(null) }}
                   >
                     <Ionicons name="trash-outline" size={14} color="#ff6b6b" />
                     <Text style={[styles.toolPanelText, { color: '#ff6b6b' }]}>{t('trainingStatus.delete')}</Text>

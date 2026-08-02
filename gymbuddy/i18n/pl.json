@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Naklejki",
     "stickerSearchPlaceholder": "Szukaj naklejek…",
-    "stickerSlider": "Slider"
+    "stickerSlider": "Slider",
+    "stickerCountdown": "Odliczanie",
+    "countdownIn": "Za",
+    "countdownRemindMe": "Przypomnij mi",
+    "countdownReminded": "Zaplanowano",
+    "countdownReminderTitle": "⏳ Odliczanie się skończyło",
+    "countdownReminderBody": "Czas minął — sprawdź co u niej/niego!"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

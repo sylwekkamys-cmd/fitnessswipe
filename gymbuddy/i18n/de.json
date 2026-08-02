@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Sticker",
     "stickerSearchPlaceholder": "Sticker suchen…",
-    "stickerSlider": "Schieberegler"
+    "stickerSlider": "Schieberegler",
+    "stickerCountdown": "Countdown",
+    "countdownIn": "In",
+    "countdownRemindMe": "Erinnere mich",
+    "countdownReminded": "Erinnerung gesetzt",
+    "countdownReminderTitle": "⏳ Countdown ist vorbei",
+    "countdownReminderBody": "Die Zeit ist um — schau vorbei!"
   },
   "reportBlock": {
     "report": "Nutzer melden",

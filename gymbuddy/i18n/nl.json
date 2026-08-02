@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Stickers",
     "stickerSearchPlaceholder": "Stickers zoeken…",
-    "stickerSlider": "Schuifregelaar"
+    "stickerSlider": "Schuifregelaar",
+    "stickerCountdown": "Aftellen",
+    "countdownIn": "Over",
+    "countdownRemindMe": "Herinner mij",
+    "countdownReminded": "Herinnering ingesteld",
+    "countdownReminderTitle": "⏳ Het aftellen is voorbij",
+    "countdownReminderBody": "Tijd is om — neem een kijkje!"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

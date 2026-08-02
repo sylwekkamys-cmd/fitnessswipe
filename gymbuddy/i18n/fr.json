@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Autocollants",
     "stickerSearchPlaceholder": "Rechercher des autocollants…",
-    "stickerSlider": "Curseur"
+    "stickerSlider": "Curseur",
+    "stickerCountdown": "Compte à rebours",
+    "countdownIn": "Dans",
+    "countdownRemindMe": "Me le rappeler",
+    "countdownReminded": "Rappel programmé",
+    "countdownReminderTitle": "⏳ Le compte à rebours est terminé",
+    "countdownReminderBody": "C'est l'heure — jette un œil !"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

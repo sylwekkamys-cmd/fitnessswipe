@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Stickers",
     "stickerSearchPlaceholder": "Search stickers…",
-    "stickerSlider": "Slider"
+    "stickerSlider": "Slider",
+    "stickerCountdown": "Countdown",
+    "countdownIn": "In",
+    "countdownRemindMe": "Remind me",
+    "countdownReminded": "Reminder set",
+    "countdownReminderTitle": "⏳ Countdown is over",
+    "countdownReminderBody": "Time's up — check it out!"
   },
   "reportBlock": {
     "report": "Report user",

@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Pegatinas",
     "stickerSearchPlaceholder": "Buscar pegatinas…",
-    "stickerSlider": "Control deslizante"
+    "stickerSlider": "Control deslizante",
+    "stickerCountdown": "Cuenta atrás",
+    "countdownIn": "En",
+    "countdownRemindMe": "Recuérdamelo",
+    "countdownReminded": "Recordatorio activado",
+    "countdownReminderTitle": "⏳ La cuenta atrás terminó",
+    "countdownReminderBody": "¡Se acabó el tiempo, échale un vistazo!"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

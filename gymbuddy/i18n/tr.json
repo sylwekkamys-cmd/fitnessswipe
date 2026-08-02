@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Çıkartmalar",
     "stickerSearchPlaceholder": "Çıkartma ara…",
-    "stickerSlider": "Kaydırıcı"
+    "stickerSlider": "Kaydırıcı",
+    "stickerCountdown": "Geri sayım",
+    "countdownIn": "Şu kadar sonra:",
+    "countdownRemindMe": "Bana hatırlat",
+    "countdownReminded": "Hatırlatıcı ayarlandı",
+    "countdownReminderTitle": "⏳ Geri sayım sona erdi",
+    "countdownReminderBody": "Süre doldu — bir bak!"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

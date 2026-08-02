@@ -730,7 +730,13 @@
     "stickerGif": "GIF",
     "stickerSticker": "Autocolante",
     "stickerSearchPlaceholder": "Caută autocolante…",
-    "stickerSlider": "Cursor"
+    "stickerSlider": "Cursor",
+    "stickerCountdown": "Numărătoare inversă",
+    "countdownIn": "Peste",
+    "countdownRemindMe": "Amintește-mi",
+    "countdownReminded": "Memento setat",
+    "countdownReminderTitle": "⏳ Numărătoarea s-a încheiat",
+    "countdownReminderBody": "Timpul a expirat — vezi ce se întâmplă!"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

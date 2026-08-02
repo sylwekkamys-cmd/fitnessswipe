@@ -5,12 +5,15 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as Notifications from 'expo-notifications'
 import { supabase, incrementStatusView, reportUser, getStatusViewers, setSliderResponse } from '../lib/supabase'
-import { OverlayPillsView, FilterLayer } from './statusMedia'
+import { OverlayPillsView, FilterLayer, formatCountdown } from './statusMedia'
 
 const PRIMARY = '#7dc52e'
 const REACTION_EMOJIS = ['💪', '🔥', '👊']
 const SLIDER_TRACK_WIDTH = 180
+const COUNTDOWN_REMINDER_KEY = 'countdown_reminder_'
 
 // Re-eksport dla ekranow, ktore importowaly stad naklejki
 export { OverlayPillsView as OverlayPills }
@@ -67,6 +70,51 @@ function SliderOverlayViewer({ ov, statusId, disabled }: { ov: any; statusId: st
   )
 }
 
+// Naklejka odliczania u WIDZA: tykajacy zegar + przycisk lokalnego przypomnienia
+// (zaplanowane na moment osiagniecia celu, dziala bez wzgledu na to czy relacja
+// jeszcze bedzie widoczna). Na WLASNEJ relacji tylko zegar, bez przycisku.
+function CountdownOverlayViewer({ ov, statusId, authorName, disabled }: { ov: any; statusId: string; authorName?: string; disabled: boolean }) {
+  const { t } = useTranslation()
+  const [now, setNow] = useState(() => Date.now())
+  const [reminded, setReminded] = useState(false)
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  useEffect(() => {
+    if (disabled) return
+    AsyncStorage.getItem(COUNTDOWN_REMINDER_KEY + statusId).then(v => { if (v) setReminded(true) })
+  }, [statusId, disabled])
+
+  const target = new Date(ov.countdownTarget).getTime()
+  const passed = target <= now
+
+  async function remindMe() {
+    try {
+      const id = await Notifications.scheduleNotificationAsync({
+        content: { title: t('trainingStatus.countdownReminderTitle'), body: `${authorName ?? ''} ${t('trainingStatus.countdownReminderBody')}`.trim() },
+        trigger: { type: 'date', date: new Date(target) } as any,
+      })
+      await AsyncStorage.setItem(COUNTDOWN_REMINDER_KEY + statusId, id)
+      setReminded(true)
+    } catch (e) { }
+  }
+
+  return (
+    <View style={countdownStyles.wrap} pointerEvents={disabled ? 'none' : 'box-none'}>
+      <Text style={countdownStyles.value}>{passed ? '🏁' : formatCountdown(ov.countdownTarget, now)}</Text>
+      {!disabled && !passed && (
+        <TouchableOpacity style={[countdownStyles.btn, reminded && countdownStyles.btnActive]} onPress={remindMe} disabled={reminded}>
+          <Ionicons name={reminded ? 'checkmark' : 'notifications-outline'} size={14} color={reminded ? '#0d1b2e' : '#fff'} />
+          <Text style={[countdownStyles.btnText, reminded && { color: '#0d1b2e' }]}>
+            {reminded ? t('trainingStatus.countdownReminded') : t('trainingStatus.countdownRemindMe')}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  )
+}
+
 // Jeden slajd: zdjecie (rozmyte tlo + contain) albo wideo (gra tylko gdy aktywne).
 // isOwn: naklejka slidera renderuje sie jako interaktywna (przeciagalna) tylko
 // dla WIDZOW cudzej relacji — na wlasnej to statyczny podglad (bez przeciagania)
@@ -91,13 +139,28 @@ function StoryMedia({ person, isActive, muted, isOwn }: { person: any; isActive:
     </View>
   ) : null
 
+  const countdownOv = (person.overlays ?? []).find((o: any) => o.type === 'countdown')
+  const countdownNode = isActive && countdownOv ? (
+    <View
+      style={[
+        sliderStyles.anchor,
+        { left: `${Math.min(Math.max(countdownOv.x * 100, 2), 78)}%`, top: `${Math.min(Math.max(countdownOv.y * 100, 6), 84)}%` },
+      ]}
+    >
+      <CountdownOverlayViewer ov={countdownOv} statusId={person.id} authorName={person.profiles?.name} disabled={isOwn} />
+    </View>
+  ) : null
+
+  const hidden = ['slider', 'countdown']
+
   if (videoUrl) {
     return (
       <View style={[styles.media, !isActive && styles.mediaHidden]}>
         <VideoView player={player} style={styles.media} contentFit="contain" nativeControls={false} />
         <FilterLayer id={person.filter} />
-        {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+        {isActive && <OverlayPillsView status={person} hideTypes={hidden} />}
         {sliderNode}
+        {countdownNode}
       </View>
     )
   }
@@ -108,8 +171,9 @@ function StoryMedia({ person, isActive, muted, isOwn }: { person: any; isActive:
       <View style={[styles.media, !isActive && styles.mediaHidden]}>
         <LinearGradient colors={['#24405f', '#0d1b2e']} style={styles.media} />
         <FilterLayer id={person.filter} />
-        {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+        {isActive && <OverlayPillsView status={person} hideTypes={hidden} />}
         {sliderNode}
+        {countdownNode}
       </View>
     )
   }
@@ -119,8 +183,9 @@ function StoryMedia({ person, isActive, muted, isOwn }: { person: any; isActive:
       <View style={[styles.media, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
       <Image source={{ uri }} style={styles.media} resizeMode="contain" />
       <FilterLayer id={person.filter} />
-      {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+      {isActive && <OverlayPillsView status={person} hideTypes={hidden} />}
       {sliderNode}
+      {countdownNode}
     </View>
   )
 }
@@ -560,4 +625,19 @@ const sliderStyles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 5,
   },
   handleAnswered: { borderColor: '#94e336' },
+})
+
+const countdownStyles = StyleSheet.create({
+  wrap: { alignItems: 'center' },
+  value: {
+    fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,
+  },
+  btn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10,
+    backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8,
+  },
+  btnActive: { backgroundColor: '#94e336', borderColor: '#94e336' },
+  btnText: { fontSize: 12.5, fontWeight: '700', color: '#fff' },
 })

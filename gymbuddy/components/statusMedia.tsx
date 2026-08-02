@@ -16,10 +16,24 @@ import { Ionicons } from '@expo/vector-icons'
 // napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
 // tapniecie zetonu skleja calosc z powrotem.
 export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string }
-export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string } & Partial<ActivityData>
+export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider' | 'countdown'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string; countdownTarget?: string } & Partial<ActivityData>
 
 // Emoji do wyboru jako "buzia" slidera (jak w IG) — stala paleta, wyswietlana w edytorze
 export const SLIDER_EMOJIS = ['❤️', '🔥', '😍', '💪', '😂', '👍'] as const
+
+// Format odliczania: "2d 04:12:33" (ponizej 1 dnia bez segmentu dni), po czasie flaga mety
+export function formatCountdown(targetIso: string, now: number): string {
+  const target = new Date(targetIso).getTime()
+  const diff = target - now
+  if (diff <= 0) return '🏁'
+  const totalSec = Math.floor(diff / 1000)
+  const days = Math.floor(totalSec / 86400)
+  const hours = Math.floor((totalSec % 86400) / 3600)
+  const mins = Math.floor((totalSec % 3600) / 60)
+  const secs = totalSec % 60
+  const p2 = (n: number) => String(n).padStart(2, '0')
+  return days > 0 ? `${days}d ${p2(hours)}:${p2(mins)}:${p2(secs)}` : `${p2(hours)}:${p2(mins)}:${p2(secs)}`
+}
 
 // Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
 export const ACTIVITY_SPORTS = [
@@ -149,6 +163,22 @@ export const FILTER_SWATCHES: Record<string, [string, string]> = {
   fade: ['#f2f2f6', '#b9b9c4'],
 }
 
+// Tykajacy zegar odliczania (co sekunde) — uzywany w edytorze/podgladzie wlasnej
+// relacji; przycisk "przypomnij mi" dla widzow renderuje osobny komponent w StoryViewer
+function CountdownFace({ target }: { target?: string | null }) {
+  const [now, setNow] = React.useState(() => Date.now())
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  if (!target) return null
+  return (
+    <View style={s.countdownWrap}>
+      <Text style={s.countdownValue}>{formatCountdown(target, now)}</Text>
+    </View>
+  )
+}
+
 // Pojedynczy wiersz statystyki: biala ikona w kolku + wartosc z jednostka + podpis
 function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }) {
   return (
@@ -166,8 +196,8 @@ function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }
 
 // Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
 // PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
-export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl, stickerUrl, sliderEmoji }: {
-  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'
+export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl, stickerUrl, sliderEmoji, countdownTarget }: {
+  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider' | 'countdown'
   variant?: number
   time?: string | null
   gym?: string | null
@@ -178,11 +208,17 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   gifUrl?: string | null
   stickerUrl?: string | null
   sliderEmoji?: string | null
+  countdownTarget?: string | null
 }) {
   // Naklejka GIF: sama animacja, bez tekstu ani ramki — tylko zaokraglone rogi
   if (type === 'gif') {
     if (!gifUrl) return null
     return <Image source={{ uri: gifUrl }} style={s.gifSticker} resizeMode="cover" />
+  }
+
+  // Odliczanie: staly (tykajacy) podglad — "przypomnij mi" dla widzow renderuje StoryViewer osobno
+  if (type === 'countdown') {
+    return <CountdownFace target={countdownTarget} />
   }
 
   // Naklejka z paczki Giphy Stickers: mniejsza, przezroczyste tlo z natury,
@@ -291,6 +327,7 @@ export function OverlayPillsView({ status, hideTypes }: { status: any; hideTypes
             gifUrl={ov.gifUrl}
             stickerUrl={ov.stickerUrl}
             sliderEmoji={ov.sliderEmoji}
+            countdownTarget={ov.countdownTarget}
           />
         </View>
         )
@@ -370,5 +407,10 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#fff', backgroundColor: 'rgba(13,27,46,0.55)',
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 5,
+  },
+  countdownWrap: { alignItems: 'center' },
+  countdownValue: {
+    fontSize: 28, fontWeight: '900', color: '#fff', letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,
   },
 })
