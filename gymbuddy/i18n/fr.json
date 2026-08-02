@@ -1608,7 +1608,8 @@
     "timeMin": "Temps (min)",
     "kcalOpt": "Calories (optionnel)",
     "hint": "L’allure est calculée automatiquement. Les données de la montre sont préremplies si la santé est connectée.",
-    "stick": "Ajouter"
+    "stick": "Ajouter",
+    "hrOpt": "Fréquence cardiaque (facultatif)"
   },
   "notFound": {
     "title": "Cet écran n'existe pas",

@@ -63,7 +63,10 @@ export async function connectHealth(): Promise<{ success: boolean; error?: strin
       if (!available) return { success: false, error: 'unavailable' }
       // Apple nie zdradza, czy uzytkownik faktycznie przyznal odczyt (prywatnosc) —
       // sukces requestu traktujemy jako polaczenie; brak zgody = zawsze 0 krokow
-      await hk.requestAuthorization(['HKQuantityTypeIdentifierStepCount', 'HKWorkoutTypeIdentifier'])
+      await hk.requestAuthorization([
+        'HKQuantityTypeIdentifierStepCount', 'HKWorkoutTypeIdentifier',
+        'HKQuantityTypeIdentifierHeartRate', 'HKQuantityTypeIdentifierActiveEnergyBurned',
+      ])
       await AsyncStorage.setItem('health_connected', '1')
       return { success: true }
     } catch (e: any) {
@@ -80,6 +83,8 @@ export async function connectHealth(): Promise<{ success: boolean; error?: strin
       { accessType: 'read', recordType: 'Steps' },
       { accessType: 'read', recordType: 'ExerciseSession' },
       { accessType: 'read', recordType: 'Distance' },
+      { accessType: 'read', recordType: 'HeartRate' },
+      { accessType: 'read', recordType: 'ActiveCaloriesBurned' },
     ])
     const hasSteps = (granted ?? []).some((p: any) => p.recordType === 'Steps')
     if (hasSteps) {
@@ -131,9 +136,10 @@ export async function getStepsBetween(start: Date, end: Date): Promise<number | 
   }
 }
 
-// Ostatni dzisiejszy trening (do naklejki aktywnosci na relacji): czas + dystans.
-// Best-effort — kazdy brak danych konczy sie null i recznym wpisaniem w edytorze.
-export async function getTodayWorkout(): Promise<{ durationMin: number; distanceKm: number | null } | null> {
+// Ostatni dzisiejszy trening (do naklejki aktywnosci na relacji): czas, dystans,
+// tetno srednie, kalorie. Best-effort na kazdym polu osobno — brak danych na
+// ktoryms z nich nie blokuje reszty, a przy calkowitym braku user wpisuje recznie.
+export async function getTodayWorkout(): Promise<{ durationMin: number; distanceKm: number | null; avgHeartRate: number | null; calories: number | null } | null> {
   if (!(await isHealthConnected())) return null
   const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
   const now = new Date()
@@ -151,10 +157,25 @@ export async function getTodayWorkout(): Promise<{ durationMin: number; distance
       const w = workouts?.[0]
       if (!w) return null
       const durationMin = Math.round((w.duration ?? 0) / 60)
+      if (durationMin <= 0) return null
       const distanceKm = w.totalDistance?.quantity
         ? Math.round(w.totalDistance.quantity / 10) / 100
         : null
-      return durationMin > 0 ? { durationMin, distanceKm } : null
+      const wStart = w.startDate ? new Date(w.startDate) : dayStart
+      const wEnd = w.endDate ? new Date(w.endDate) : now
+      let avgHeartRate: number | null = null
+      try {
+        const hrStats = await hk.queryStatisticsForQuantity('HKQuantityTypeIdentifierHeartRate', ['discreteAverage'], wStart, wEnd, 'count/min')
+        const avg = hrStats?.averageQuantity?.quantity
+        if (avg) avgHeartRate = Math.round(avg)
+      } catch (e) { }
+      let calories: number | null = null
+      try {
+        const calStats = await hk.queryStatisticsForQuantity('HKQuantityTypeIdentifierActiveEnergyBurned', ['cumulativeSum'], wStart, wEnd, 'kcal')
+        const sum = calStats?.sumQuantity?.quantity
+        if (sum) calories = Math.round(sum)
+      } catch (e) { }
+      return { durationMin, distanceKm, avgHeartRate, calories }
     } catch (e) { return null }
   }
   const hc = getHC()
@@ -167,6 +188,7 @@ export async function getTodayWorkout(): Promise<{ durationMin: number; distance
     const s = sessions[sessions.length - 1]
     if (!s) return null
     const durationMin = Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000)
+    if (durationMin <= 0) return null
     let distanceKm: number | null = null
     try {
       const agg = await hc.aggregateRecord({
@@ -176,7 +198,25 @@ export async function getTodayWorkout(): Promise<{ durationMin: number; distance
       const meters = agg?.DISTANCE?.inMeters ?? agg?.DISTANCE_TOTAL?.inMeters ?? null
       if (meters) distanceKm = Math.round(meters / 10) / 100
     } catch (e) { }
-    return durationMin > 0 ? { durationMin, distanceKm } : null
+    let avgHeartRate: number | null = null
+    try {
+      const hrAgg = await hc.aggregateRecord({
+        recordType: 'HeartRate',
+        timeRangeFilter: { operator: 'between', startTime: s.startTime, endTime: s.endTime },
+      })
+      const avg = hrAgg?.BPM_AVG ?? hrAgg?.HEART_RATE_AVG ?? hrAgg?.AVERAGE ?? null
+      if (avg) avgHeartRate = Math.round(avg)
+    } catch (e) { }
+    let calories: number | null = null
+    try {
+      const calAgg = await hc.aggregateRecord({
+        recordType: 'ActiveCaloriesBurned',
+        timeRangeFilter: { operator: 'between', startTime: s.startTime, endTime: s.endTime },
+      })
+      const kcal = calAgg?.ACTIVE_CALORIES_TOTAL?.inKilocalories ?? calAgg?.ENERGY_TOTAL?.inKilocalories ?? null
+      if (kcal) calories = Math.round(kcal)
+    } catch (e) { }
+    return { durationMin, distanceKm, avgHeartRate, calories }
   } catch (e) { return null }
 }
 

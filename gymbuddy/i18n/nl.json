@@ -1608,7 +1608,8 @@
     "timeMin": "Tijd (min)",
     "kcalOpt": "Calorieën (optioneel)",
     "hint": "Het tempo wordt automatisch berekend. Horlogedata wordt ingevuld als gezondheid gekoppeld is.",
-    "stick": "Toevoegen"
+    "stick": "Toevoegen",
+    "hrOpt": "Hartslag (optioneel)"
   },
   "notFound": {
     "title": "Dit scherm bestaat niet",

@@ -1608,7 +1608,8 @@
     "timeMin": "Time (min)",
     "kcalOpt": "Calories (optional)",
     "hint": "Pace is calculated automatically. Watch data is prefilled if health is connected.",
-    "stick": "Add"
+    "stick": "Add",
+    "hrOpt": "Heart rate (optional)"
   },
   "notFound": {
     "title": "This screen doesn't exist",

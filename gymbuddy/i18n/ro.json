@@ -1608,7 +1608,8 @@
     "timeMin": "Timp (min)",
     "kcalOpt": "Calorii (opțional)",
     "hint": "Ritmul se calculează automat. Datele de pe ceas se completează dacă sănătatea e conectată.",
-    "stick": "Adaugă"
+    "stick": "Adaugă",
+    "hrOpt": "Puls (opțional)"
   },
   "notFound": {
     "title": "Acest ecran nu există",

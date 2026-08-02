@@ -31,7 +31,7 @@ const STATUS_PRESET_ICONS = [
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
 // id + chip = pojedynczy zeton po rozsypaniu (kazdy przeciagany osobno)
-type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; id?: string; chip?: number }
+type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number }
 
 // Przeciagalna naklejka (styl IG): pozycja znormalizowana 0..1 wzgledem obszaru medium.
 // Przeciaganie = zmiana pozycji, tapniecie = zmiana stylu (3 warianty), ✕ = usuniecie,
@@ -180,6 +180,7 @@ export default function TrainingStatusScreen() {
   const [actDist, setActDist] = useState('')
   const [actMins, setActMins] = useState('')
   const [actKcal, setActKcal] = useState('')
+  const [actHr, setActHr] = useState('')
   // Modale naklejek z wlasnym tekstem (dowolny tekst / rekord PR)
   const [showTextModal, setShowTextModal] = useState(false)
   const [textStickerInput, setTextStickerInput] = useState('')
@@ -353,27 +354,33 @@ export default function TrainingStatusScreen() {
     setActDist('')
     setActMins('')
     setActKcal('')
+    setActHr('')
     import('../lib/health')
       .then(async h => {
         const w = await h.getTodayWorkout()
         if (!w) return
         setActMins(m => m || String(w.durationMin))
         if (w.distanceKm) setActDist(d => d || String(w.distanceKm))
+        if (w.avgHeartRate) setActHr(v => v || String(w.avgHeartRate))
+        if (w.calories) setActKcal(v => v || String(w.calories))
       })
       .catch(() => { })
   }
 
   // Wspolny builder danych naklejki: uzywa go i podglad na zywo w modalu,
   // i faktyczne naklejenie — podglad zawsze pokazuje dokladnie to, co wyladuje
-  function buildActivityData(sport: string, distStr: string, minsStr: string, kcalStr: string): { m: string; mu: string; tm?: string; ex?: string } {
+  function buildActivityData(sport: string, distStr: string, minsStr: string, kcalStr: string, hrStr: string): { m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string } {
     const dist = parseFloat(distStr.replace(',', '.'))
     const mins = parseInt(minsStr, 10)
     const kcal = parseInt(kcalStr, 10)
+    const hr = parseInt(hrStr, 10)
     const fmt1 = (n: number) => (Math.round(n * 10) / 10).toString().replace('.', ',')
     const tmStr = mins > 0 ? (mins >= 60 ? `${Math.floor(mins / 60)}h ${pad(mins % 60)}m` : `${mins} min`) : undefined
+    const kcalStr2 = kcal > 0 ? String(kcal) : undefined
+    const hrStr2 = hr > 0 ? String(hr) : undefined
 
     if (sport === 'gym') {
-      return { m: mins > 0 ? String(mins) : '0', mu: 'MIN', ex: kcal > 0 ? `${kcal} kcal` : undefined }
+      return { m: mins > 0 ? String(mins) : '0', mu: 'MIN', kcal: kcalStr2, hr: hrStr2 }
     }
     let ex: string | undefined
     if (dist > 0 && mins > 0) {
@@ -384,7 +391,7 @@ export default function TrainingStatusScreen() {
         ex = `${Math.floor(p)}:${pad(Math.round((p - Math.floor(p)) * 60))} /km`
       }
     }
-    return { m: dist > 0 ? fmt1(dist) : '0', mu: 'KM', tm: tmStr, ex }
+    return { m: dist > 0 ? fmt1(dist) : '0', mu: 'KM', tm: tmStr, ex, kcal: kcalStr2, hr: hrStr2 }
   }
 
   function activityFormValid(): boolean {
@@ -396,7 +403,7 @@ export default function TrainingStatusScreen() {
 
   function addActivityOverlay() {
     if (!actSport || !activityFormValid()) return
-    const data = buildActivityData(actSport, actDist, actMins, actKcal)
+    const data = buildActivityData(actSport, actDist, actMins, actKcal, actHr)
     setOverlays(prev => [...prev.filter(o => o.type !== 'activity'), {
       type: 'activity' as const, sport: actSport, ...data,
       text: t('activity.' + actSport), x: 0.16, y: 0.3, v: 0,
@@ -452,7 +459,7 @@ export default function TrainingStatusScreen() {
   }
   function cycleOverlay(ov: Overlay) {
     if (ov.type === 'activity') {
-      const act = ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex } : null
+      const act = ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null
       if (!act) return
       if (ov.chip == null) {
         // Duzy napis -> rozsyp na osobne, niezaleznie przeciagane zetony
@@ -1405,7 +1412,7 @@ export default function TrainingStatusScreen() {
 
             {/* Podglad naklejki NA ZYWO — dokladnie ta trafi na zdjecie */}
             {actSport && (() => {
-              const preview = buildActivityData(actSport, actDist, actMins, actKcal)
+              const preview = buildActivityData(actSport, actDist, actMins, actKcal, actHr)
               return (
                 <LinearGradient colors={['#24405f', '#0d1b2e']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.actPreviewCard}>
                   <View style={{ transform: [{ scale: 0.8 }] }}>
@@ -1449,20 +1456,32 @@ export default function TrainingStatusScreen() {
                   autoFocus={actSport === 'gym'}
                 />
               </View>
-              {actSport === 'gym' && (
-                <View style={styles.actInputBox}>
-                  <Text style={styles.actInputLabel}>{t('activity.kcalOpt')}</Text>
-                  <TextInput
-                    style={styles.actInput}
-                    value={actKcal}
-                    onChangeText={setActKcal}
-                    placeholder="0"
-                    placeholderTextColor="rgba(255,255,255,0.25)"
-                    keyboardType="number-pad"
-                    maxLength={5}
-                  />
-                </View>
-              )}
+            </View>
+            <View style={[styles.actInputsRow, { marginTop: 8 }]}>
+              <View style={styles.actInputBox}>
+                <Text style={styles.actInputLabel}>{t('activity.kcalOpt')}</Text>
+                <TextInput
+                  style={styles.actInput}
+                  value={actKcal}
+                  onChangeText={setActKcal}
+                  placeholder="0"
+                  placeholderTextColor="rgba(255,255,255,0.25)"
+                  keyboardType="number-pad"
+                  maxLength={5}
+                />
+              </View>
+              <View style={styles.actInputBox}>
+                <Text style={styles.actInputLabel}>{t('activity.hrOpt')}</Text>
+                <TextInput
+                  style={styles.actInput}
+                  value={actHr}
+                  onChangeText={setActHr}
+                  placeholder="0"
+                  placeholderTextColor="rgba(255,255,255,0.25)"
+                  keyboardType="number-pad"
+                  maxLength={3}
+                />
+              </View>
             </View>
 
             <Text style={styles.actHint}>{t('activity.hint')}</Text>

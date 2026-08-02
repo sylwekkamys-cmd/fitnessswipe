@@ -1608,7 +1608,8 @@
     "timeMin": "Tiempo (min)",
     "kcalOpt": "Calorías (opcional)",
     "hint": "El ritmo se calcula solo. Los datos del reloj se rellenan si la salud está conectada.",
-    "stick": "Añadir"
+    "stick": "Añadir",
+    "hrOpt": "Frecuencia cardíaca (opcional)"
   },
   "notFound": {
     "title": "Esta pantalla no existe",

@@ -1608,7 +1608,8 @@
     "timeMin": "Süre (dk)",
     "kcalOpt": "Kalori (isteğe bağlı)",
     "hint": "Tempo otomatik hesaplanır. Sağlık bağlıysa saat verileri önceden doldurulur.",
-    "stick": "Ekle"
+    "stick": "Ekle",
+    "hrOpt": "Nabız (isteğe bağlı)"
   },
   "notFound": {
     "title": "Bu ekran mevcut değil",

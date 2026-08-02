@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, Animated } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from '@expo/vector-icons'
 
 // ============================================================
 // Wspolne elementy wizualne relacji: filtry kolorystyczne (tinty)
@@ -14,7 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 // tm = czas, ex = tempo/predkosc/kalorie). Tapniecie w edytorze rozsypuje duzy
 // napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
 // tapniecie zetonu skleja calosc z powrotem.
-export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string }
+export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string }
 export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number } & Partial<ActivityData>
 
 // Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
@@ -26,12 +27,15 @@ export const ACTIVITY_SPORTS = [
   { key: 'swim', emoji: '🥽' },
 ] as const
 
-// Zetony statystyk budowane z danych aktywnosci (2-3 sztuki zaleznie od pol)
-export function activityChips(act: ActivityData): { val: string; sub: string; color: string }[] {
+// Zetony statystyk budowane z danych aktywnosci (do 5 sztuk zaleznie od pol,
+// kazdy niezaleznie przeciagany po rozsypaniu — patrz cycleOverlay)
+export function activityChips(act: ActivityData): { val: string; sub: string; color: string; icon: string }[] {
   return [
-    { val: act.m, sub: act.mu, color: '#94e336' },
-    ...(act.tm ? [{ val: act.tm, sub: 'CZAS', color: '#4fc3f7' }] : []),
-    ...(act.ex ? [{ val: act.ex.split(' ')[0], sub: act.ex.split(' ').slice(1).join(' ') || ' ', color: '#f0b429' }] : []),
+    { val: act.m, sub: act.mu, color: '#94e336', icon: 'navigate-outline' },
+    ...(act.tm ? [{ val: act.tm, sub: 'CZAS', color: '#4fc3f7', icon: 'time-outline' }] : []),
+    ...(act.ex ? [{ val: act.ex.split(' ')[0], sub: act.ex.split(' ').slice(1).join(' ') || ' ', color: '#f0b429', icon: 'speedometer-outline' }] : []),
+    ...(act.hr ? [{ val: act.hr, sub: 'TĘTNO', color: '#ff6b6b', icon: 'heart-outline' }] : []),
+    ...(act.kcal ? [{ val: act.kcal, sub: 'KCAL', color: '#b388ff', icon: 'flame-outline' }] : []),
   ]
 }
 
@@ -159,6 +163,9 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {toRender.map((c, i) => (
             <View key={i} style={[s.actChip, { borderColor: c.color, transform: [{ rotate: `${[-6, 3, 7][(typeof chipIndex === 'number' ? chipIndex : i) % 3]}deg` }] }]}>
+              <View style={s.actChipIconWrap}>
+                <Ionicons name={c.icon as any} size={14} color="#fff" />
+              </View>
               <Text style={s.actChipVal} numberOfLines={1}>{c.val}</Text>
               <Text style={[s.actChipSub, { color: c.color }]} numberOfLines={1}>{c.sub}</Text>
             </View>
@@ -170,8 +177,10 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
       <View style={{ alignItems: 'center' }}>
         <Text style={s.actBigValue}>{act.m}</Text>
         <Text style={s.actBigLabel}>{act.mu} · {label}</Text>
-        {(act.tm || act.ex) ? (
-          <Text style={s.actBigSub}>{[act.tm, act.ex].filter(Boolean).join(' · ')}</Text>
+        {(act.tm || act.ex || act.hr || act.kcal) ? (
+          <Text style={s.actBigSub}>
+            {[act.tm, act.ex, act.hr ? `${act.hr} bpm` : null, act.kcal ? `${act.kcal} kcal` : null].filter(Boolean).join(' · ')}
+          </Text>
         ) : null}
       </View>
     )
@@ -230,7 +239,7 @@ export function OverlayPillsView({ status }: { status: any }) {
           <StickerContent
             type={ov.type} variant={ov.v}
             time={status?.training_time} gym={status?.gym_name} text={ov.text}
-            act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex } : null}
+            act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null}
             sportLabel={ov.text ?? undefined}
             chipIndex={ov.chip}
           />
@@ -288,10 +297,14 @@ const s = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
   },
   actChip: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(10,16,28,0.82)',
-    borderWidth: 2, alignItems: 'center', justifyContent: 'center',
+    width: 74, borderRadius: 18, backgroundColor: 'rgba(10,16,28,0.82)',
+    borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 6,
     shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
   },
-  actChipVal: { fontSize: 13, fontWeight: '900', color: '#fff' },
-  actChipSub: { fontSize: 8, fontWeight: '800', marginTop: 1, letterSpacing: 0.5 },
+  actChipIconWrap: {
+    width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 5,
+  },
+  actChipVal: { fontSize: 13, fontWeight: '900', color: '#fff', textAlign: 'center' },
+  actChipSub: { fontSize: 7.5, fontWeight: '800', marginTop: 2, letterSpacing: 0.4, textAlign: 'center' },
 })

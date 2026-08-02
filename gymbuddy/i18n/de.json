@@ -1608,7 +1608,8 @@
     "timeMin": "Zeit (min)",
     "kcalOpt": "Kalorien (optional)",
     "hint": "Das Tempo wird automatisch berechnet. Uhrdaten werden vorausgefüllt, wenn Health verbunden ist.",
-    "stick": "Hinzufügen"
+    "stick": "Hinzufügen",
+    "hrOpt": "Herzfrequenz (optional)"
   },
   "notFound": {
     "title": "Diesen Bildschirm gibt es nicht",

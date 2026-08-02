@@ -1608,7 +1608,8 @@
     "timeMin": "Czas (min)",
     "kcalOpt": "Kalorie (opcjonalnie)",
     "hint": "Tempo policzy się samo. Dane z zegarka podpowiadamy, jeśli masz połączone zdrowie.",
-    "stick": "Dodaj"
+    "stick": "Dodaj",
+    "hrOpt": "Tętno (opcjonalnie)"
   },
   "notFound": {
     "title": "Ten ekran nie istnieje",
