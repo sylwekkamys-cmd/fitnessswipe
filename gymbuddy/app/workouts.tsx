@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput, Modal, Image } from 'react-native'
-import { Calendar } from 'react-native-calendars'
 import { LinearGradient } from 'expo-linear-gradient'
 import ViewShot from 'react-native-view-shot'
 import * as Sharing from 'expo-sharing'
@@ -43,6 +42,19 @@ function typeColors(code: string): [string, string] {
 }
 function pad2(n: number) { return String(n).padStart(2, '0') }
 function dateKey(d: Date) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}` }
+// Poniedzialek tygodnia zawierajacego dana date (niedziela = 0 w JS, stad -6 zamiast +1)
+function mondayOf(d: Date): Date {
+  const x = new Date(d)
+  const day = x.getDay()
+  x.setDate(x.getDate() - (day === 0 ? 6 : day - 1))
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+function addDays(d: Date, n: number): Date {
+  const x = new Date(d)
+  x.setDate(x.getDate() + n)
+  return x
+}
 
 type Workout = {
   id: string
@@ -63,7 +75,7 @@ export default function WorkoutsScreen() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [matches, setMatches] = useState<any[]>([])
-  const [selectedDay, setSelectedDay] = useState('')
+  const [selectedDay, setSelectedDay] = useState(dateKey(new Date()))
   const [view, setView] = useState<'calendar' | 'list'>('calendar')
   const [selectedType, setSelectedType] = useState('strength')
   const [workoutHour, setWorkoutHour] = useState(18)
@@ -84,6 +96,8 @@ export default function WorkoutsScreen() {
   const [successInfo, setSuccessInfo] = useState<{ streak: number; workout: Workout | null } | null>(null)
   const [steps, setSteps] = useState('')
   const [stepsAuto, setStepsAuto] = useState(false)
+  // Pasek tygodnia (wariant 3 kalendarza): poniedzialek biezaco wyswietlanego tygodnia
+  const [weekStart, setWeekStart] = useState(() => mondayOf(new Date()))
 
   useEffect(() => { loadData() }, [])
 
@@ -311,22 +325,16 @@ export default function WorkoutsScreen() {
     return best ? { name: best[0], count: best[1] } : null
   }
 
-  function getMarkedDates() {
-    const marked: any = {}
-    workouts.forEach(w => {
-      if (!marked[w.workout_date]) {
-        marked[w.workout_date] = {
-          marked: true,
-          dotColor: typeColors(w.workout_type)[1],
-          selected: selectedDay === w.workout_date,
-          selectedColor: selectedDay === w.workout_date ? PRIMARY : undefined,
-        }
-      }
-    })
-    if (selectedDay && !marked[selectedDay]) {
-      marked[selectedDay] = { selected: true, selectedColor: PRIMARY }
-    }
-    return marked
+  // Czy dany dzien ma trening i jakim kolorem oznaczyc kropke (kolor pierwszego treningu tego dnia)
+  function getDayInfo(key: string): { hasWorkout: boolean; color: string } {
+    const w = workouts.find(w => w.workout_date === key)
+    return w ? { hasWorkout: true, color: typeColors(w.workout_type)[1] } : { hasWorkout: false, color: PRIMARY }
+  }
+
+  function formatWeekRange(weekStartDate: Date): string {
+    const end = addDays(weekStartDate, 6)
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+    return `${weekStartDate.toLocaleDateString('pl-PL', opts)} – ${end.toLocaleDateString('pl-PL', opts)}`
   }
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={PRIMARY} /></View>
@@ -492,20 +500,42 @@ export default function WorkoutsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {view === 'calendar' ? (
           <>
-            <Calendar
-              markedDates={getMarkedDates()}
-              onDayPress={(day: any) => setSelectedDay(day.dateString)}
-              theme={{
-                backgroundColor: BG, calendarBackground: BG_LIGHT,
-                textSectionTitleColor: 'rgba(255,255,255,0.4)',
-                selectedDayBackgroundColor: PRIMARY, selectedDayTextColor: '#fff',
-                todayTextColor: PRIMARY, dayTextColor: '#fff',
-                textDisabledColor: 'rgba(255,255,255,0.2)',
-                dotColor: PRIMARY, selectedDotColor: '#fff',
-                arrowColor: PRIMARY, monthTextColor: '#fff',
-              }}
-              style={styles.calendar}
-            />
+            <View style={styles.weekNavRow}>
+              <TouchableOpacity style={styles.weekNavBtn} onPress={() => setWeekStart(w => addDays(w, -7))}>
+                <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.6)" />
+              </TouchableOpacity>
+              <Text style={styles.weekRangeLabel}>
+                {formatWeekRange(weekStart)}
+              </Text>
+              <TouchableOpacity style={styles.weekNavBtn} onPress={() => setWeekStart(w => addDays(w, 7))}>
+                <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.6)" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.weekStrip}>
+              {Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).map(day => {
+                const key = dateKey(day)
+                const info = getDayInfo(key)
+                const isSelected = selectedDay === key
+                const isToday = key === dateKey(new Date())
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={[styles.weekDayCard, isSelected && styles.weekDayCardActive]}
+                    onPress={() => setSelectedDay(key)}
+                  >
+                    <Text style={[styles.weekDayLetter, isSelected && styles.weekDayLetterActive]}>
+                      {day.toLocaleDateString('pl-PL', { weekday: 'narrow' }).toUpperCase()}
+                    </Text>
+                    <Text style={[styles.weekDayNumber, isSelected && styles.weekDayNumberActive, isToday && !isSelected && { color: PRIMARY }]}>
+                      {day.getDate()}
+                    </Text>
+                    {info.hasWorkout && (
+                      <View style={[styles.weekDayDot, { backgroundColor: isSelected ? BG : info.color }]} />
+                    )}
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
             {selectedDay ? (
               <View style={styles.daySection}>
                 <Text style={styles.daySectionTitle}>{formatDate(selectedDay)}</Text>
@@ -802,6 +832,17 @@ const styles = StyleSheet.create({
   viewBtnText: { fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
   viewBtnTextActive: { color: PRIMARY },
   calendar: { marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', marginBottom: 16 },
+  weekNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 10 },
+  weekNavBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: BG_LIGHT, alignItems: 'center', justifyContent: 'center' },
+  weekRangeLabel: { fontSize: 13, fontWeight: '700', color: '#fff', textTransform: 'capitalize' },
+  weekStrip: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, marginBottom: 16 },
+  weekDayCard: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: BG_LIGHT },
+  weekDayCardActive: { backgroundColor: PRIMARY },
+  weekDayLetter: { fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.4)' },
+  weekDayLetterActive: { color: 'rgba(13,27,46,0.6)' },
+  weekDayNumber: { fontSize: 15, fontWeight: '700', color: '#fff', marginTop: 3 },
+  weekDayNumberActive: { color: BG },
+  weekDayDot: { width: 5, height: 5, borderRadius: 2.5, marginTop: 5 },
   daySection: { paddingHorizontal: 16, marginBottom: 16 },
   daySectionTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
   addDayBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(125,197,46,0.1)', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: 'rgba(125,197,46,0.3)', borderStyle: 'dashed' },
