@@ -727,7 +727,9 @@
     "preset4": "Кросфит",
     "preset5": "Бокс",
     "preset6": "Колоездене",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Стикери",
+    "stickerSearchPlaceholder": "Търсене на стикери…"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

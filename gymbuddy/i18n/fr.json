@@ -727,7 +727,9 @@
     "preset4": "CrossFit",
     "preset5": "Boxe",
     "preset6": "Vélo",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Autocollants",
+    "stickerSearchPlaceholder": "Rechercher des autocollants…"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

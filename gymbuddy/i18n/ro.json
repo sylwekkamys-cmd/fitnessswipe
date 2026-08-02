@@ -727,7 +727,9 @@
     "preset4": "CrossFit",
     "preset5": "Box",
     "preset6": "Ciclism",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Autocolante",
+    "stickerSearchPlaceholder": "Caută autocolante…"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

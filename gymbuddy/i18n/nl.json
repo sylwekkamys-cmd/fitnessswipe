@@ -727,7 +727,9 @@
     "preset4": "CrossFit",
     "preset5": "Boksen",
     "preset6": "Fietsen",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Stickers",
+    "stickerSearchPlaceholder": "Stickers zoeken…"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

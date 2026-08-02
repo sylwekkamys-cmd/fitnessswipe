@@ -31,7 +31,7 @@ const STATUS_PRESET_ICONS = [
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
 // id + chip = pojedynczy zeton po rozsypaniu (kazdy przeciagany osobno)
-type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string }
+type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string }
 
 // Przeciagalna naklejka (styl IG): pozycja znormalizowana 0..1 wzgledem obszaru medium.
 // Przeciaganie = zmiana pozycji, tapniecie = zmiana stylu (3 warianty), ✕ = usuniecie,
@@ -121,6 +121,7 @@ function StickerPill({ ov, time, gym, area, onChange, onCycle, onRemove, onScale
           sportLabel={ov.text ?? undefined}
           chipIndex={ov.chip}
           gifUrl={ov.gifUrl}
+          stickerUrl={ov.stickerUrl}
         />
       </View>
       <TouchableOpacity style={stickerStyles.removeBtn} onPress={onRemove} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
@@ -213,8 +214,11 @@ export default function TrainingStatusScreen() {
   const [showViewers, setShowViewers] = useState(false)
   const [viewers, setViewers] = useState<any[]>([])
   const [viewersLoading, setViewersLoading] = useState(false)
-  // Naklejka GIF: ta sama wyszukiwarka (Giphy) co w czacie
+  // Naklejka GIF / Giphy Sticker: ta sama wyszukiwarka i modal dla obu —
+  // gifPickerKind mowi, czy szukamy w /gifs (jedna na relacje, zastepuje
+  // poprzednia) czy w /stickers (mozna dodac kilka, kazda ma wlasne id)
   const [showGifPicker, setShowGifPicker] = useState(false)
+  const [gifPickerKind, setGifPickerKind] = useState<'gif' | 'sticker'>('gif')
   const [gifQuery, setGifQuery] = useState('')
   const [gifResults, setGifResults] = useState<{ id: string; preview: string; url: string }[]>([])
   const [gifLoading, setGifLoading] = useState(false)
@@ -353,28 +357,35 @@ export default function TrainingStatusScreen() {
     setShowPrModal(false)
   }
 
-  // Naklejka GIF: ta sama funkcja edge co w czacie (Giphy), z cache po stronie serwera
-  async function fetchGifs(q: string) {
+  // Naklejka GIF / Giphy Sticker: ta sama funkcja edge co w czacie (Giphy),
+  // z cache po stronie serwera; kind wybiera endpoint /gifs albo /stickers
+  async function fetchGifs(q: string, kind: 'gif' | 'sticker') {
     setGifLoading(true)
     try {
-      const { data } = await supabase.functions.invoke('gif-search', { body: { q, lang: i18n.language } })
+      const { data } = await supabase.functions.invoke('gif-search', { body: { q, lang: i18n.language, mode: kind === 'sticker' ? 'stickers' : 'gifs' } })
       setGifResults(data?.gifs ?? [])
     } catch (e) { setGifResults([]) }
     finally { setGifLoading(false) }
   }
-  function openGifPicker() {
+  function openGifPicker(kind: 'gif' | 'sticker') {
+    setGifPickerKind(kind)
     setShowGifPicker(true)
     setGifQuery('')
-    fetchGifs('')
+    fetchGifs('', kind)
   }
   function handleGifQuery(v: string) {
     setGifQuery(v)
     if (gifSearchTimer.current) clearTimeout(gifSearchTimer.current)
-    gifSearchTimer.current = setTimeout(() => fetchGifs(v.trim()), 450)
+    gifSearchTimer.current = setTimeout(() => fetchGifs(v.trim(), gifPickerKind), 450)
   }
   function addGifOverlay(url: string) {
-    setOverlays(prev => [...prev.filter(o => o.type !== 'gif'), { type: 'gif' as const, gifUrl: url, x: 0.2, y: 0.35, v: 0 }])
-    setShowGifPicker(false)
+    if (gifPickerKind === 'sticker') {
+      // Naklejki mozna dodac wiele naraz — kazda dostaje wlasne id do usuwania pojedynczo
+      setOverlays(prev => [...prev, { type: 'sticker' as const, id: 'sticker' + Date.now() + Math.round(Math.random() * 1e6), stickerUrl: url, x: 0.3, y: 0.4, v: 0 }])
+    } else {
+      setOverlays(prev => [...prev.filter(o => o.type !== 'gif'), { type: 'gif' as const, gifUrl: url, x: 0.2, y: 0.35, v: 0 }])
+      setShowGifPicker(false)
+    }
   }
 
   // Naklejka aktywnosci: wybor sportu -> formularz z prefillowaniem z dzisiejszego
@@ -488,6 +499,11 @@ export default function TrainingStatusScreen() {
       // Rozsypane zetony maja wlasne id — usuwamy tylko ten jeden. Niesrozsypana
       // (sklejona) naklejka to pojedynczy wpis bez id, wiec usuwa sie cala.
       setOverlays(prev => prev.filter(o => !(o.type === 'activity' && (ov.id ? o.id === ov.id : true))))
+      return
+    }
+    if (ov.type === 'sticker') {
+      // Kazda naklejka Giphy ma wlasne id (mozna ich dodac kilka) — usuwamy tylko te jedna
+      setOverlays(prev => prev.filter(o => o.id !== ov.id))
       return
     }
     toggleOverlay(ov.type)
@@ -1173,7 +1189,7 @@ export default function TrainingStatusScreen() {
                 Bez medium ustawiaja tylko pola statusu; reszta to czyste naklejki, wiec wymaga medium. */}
             {toolOpen === 'stickers' && (
               <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
-                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif'] as const) : (['time', 'gym'] as const)).map(tp => {
+                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif', 'sticker'] as const) : (['time', 'gym'] as const)).map(tp => {
                   const active = overlays.some(o => o.type === tp)
                   const label =
                     tp === 'time' ? t('trainingStatus.stickerTime')
@@ -1182,9 +1198,11 @@ export default function TrainingStatusScreen() {
                     : tp === 'text' ? t('trainingStatus.stickerText')
                     : tp === 'day' ? t('trainingStatus.stickerDay')
                     : tp === 'pr' ? t('trainingStatus.stickerPr')
-                    : t('trainingStatus.stickerGif')
+                    : tp === 'gif' ? t('trainingStatus.stickerGif')
+                    : t('trainingStatus.stickerSticker')
                   const onPress = () => {
-                    if (tp === 'gif') { setToolOpen(null); openGifPicker(); return }
+                    if (tp === 'gif') { setToolOpen(null); openGifPicker('gif'); return }
+                    if (tp === 'sticker') { setToolOpen(null); openGifPicker('sticker'); return }
                     if (active) { toggleOverlay(tp); setToolOpen(null); return }
                     if (tp === 'time') { setToolOpen('time'); return }
                     if (tp === 'gym') { setToolOpen(null); openGymSearch(); return }
@@ -1547,7 +1565,8 @@ export default function TrainingStatusScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Wybor GIF-a (Giphy) — ta sama funkcja edge co w czacie */}
+      {/* Wybor GIF-a / naklejki Giphy — ta sama funkcja edge co w czacie, gifPickerKind
+          decyduje o endpoincie; naklejki nie zamykaja modala po wyborze (mozna dodac kilka) */}
       <Modal visible={showGifPicker} transparent animationType="slide" onRequestClose={() => setShowGifPicker(false)}>
         <View style={styles.sheetOverlay}>
           <View style={[styles.sheet, { maxHeight: '75%' }]}>
@@ -1556,7 +1575,7 @@ export default function TrainingStatusScreen() {
               <Ionicons name="search" size={16} color="rgba(255,255,255,0.4)" />
               <TextInput
                 style={styles.gifSearchInput}
-                placeholder={t('chat.gifSearch')}
+                placeholder={gifPickerKind === 'sticker' ? t('trainingStatus.stickerSearchPlaceholder') : t('chat.gifSearch')}
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 value={gifQuery}
                 onChangeText={handleGifQuery}

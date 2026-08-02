@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 // napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
 // tapniecie zetonu skleja calosc z powrotem.
 export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string }
-export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string } & Partial<ActivityData>
+export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string } & Partial<ActivityData>
 
 // Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
 export const ACTIVITY_SPORTS = [
@@ -163,8 +163,8 @@ function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }
 
 // Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
 // PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
-export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl }: {
-  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'
+export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl, stickerUrl }: {
+  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'
   variant?: number
   time?: string | null
   gym?: string | null
@@ -173,11 +173,19 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   sportLabel?: string
   chipIndex?: number
   gifUrl?: string | null
+  stickerUrl?: string | null
 }) {
   // Naklejka GIF: sama animacja, bez tekstu ani ramki — tylko zaokraglone rogi
   if (type === 'gif') {
     if (!gifUrl) return null
     return <Image source={{ uri: gifUrl }} style={s.gifSticker} resizeMode="cover" />
+  }
+
+  // Naklejka z paczki Giphy Stickers: mniejsza, przezroczyste tlo z natury,
+  // wiec bez zadnego zaokraglenia/ramki — czysta grafika
+  if (type === 'sticker') {
+    if (!stickerUrl) return null
+    return <Image source={{ uri: stickerUrl }} style={s.stickerImg} resizeMode="contain" />
   }
 
   // Naklejka aktywnosci: karta ze wszystkimi wierszami albo pojedynczy
@@ -258,6 +266,7 @@ export function OverlayPillsView({ status }: { status: any }) {
             sportLabel={ov.text ?? undefined}
             chipIndex={ov.chip}
             gifUrl={ov.gifUrl}
+            stickerUrl={ov.stickerUrl}
           />
         </View>
       ))}
@@ -321,4 +330,5 @@ const s = StyleSheet.create({
     width: 150, height: 150, borderRadius: 16,
     shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
   },
+  stickerImg: { width: 110, height: 110 },
 })

@@ -1,7 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-// Wyszukiwarka GIF-ow (Giphy) dla czatu. Klucz GIPHY_KEY zyje tylko tutaj.
+// Wyszukiwarka GIF-ow / naklejek Giphy (naklejki = osobne API Giphy, animowane,
+// przezroczyste tlo) dla czatu i relacji. Klucz GIPHY_KEY zyje tylko tutaj.
 // Darmowy klucz = 100 zapytan/h, wiec agresywny cache w gif_cache:
 // trendy 1 h, frazy 24 h — wspolne dla wszystkich uzytkownikow.
 
@@ -20,9 +21,11 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const q = typeof body?.q === 'string' ? body.q.trim().toLowerCase().slice(0, 60) : ''
     const lang = typeof body?.lang === 'string' ? body.lang.slice(0, 2) : 'en'
+    // stickers = osobne API Giphy: animowane, przezroczyste tlo (do naklejek na relacji)
+    const kind = body?.mode === 'stickers' ? 'stickers' : 'gifs'
 
-    // Frazy cache'ujemy per jezyk (wyniki wyszukiwania zaleza od lang)
-    const cacheKey = q ? `${lang}:${q}` : ':trending'
+    // Frazy cache'ujemy per jezyk i per rodzaj (gifs/stickers maja osobne wyniki)
+    const cacheKey = `${kind}:${q ? `${lang}:${q}` : ':trending'}`
     const ttl = q ? SEARCH_TTL_MS : TRENDING_TTL_MS
 
     const supabase = createClient(
@@ -36,8 +39,8 @@ serve(async (req) => {
     }
 
     const url = q
-      ? `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(q)}&limit=24&rating=pg-13&lang=${lang}`
-      : `https://api.giphy.com/v1/gifs/trending?api_key=${key}&limit=24&rating=pg-13`
+      ? `https://api.giphy.com/v1/${kind}/search?api_key=${key}&q=${encodeURIComponent(q)}&limit=24&rating=pg-13&lang=${lang}`
+      : `https://api.giphy.com/v1/${kind}/trending?api_key=${key}&limit=24&rating=pg-13`
 
     const res = await fetch(url)
     if (!res.ok) {

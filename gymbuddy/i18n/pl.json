@@ -727,7 +727,9 @@
     "preset4": "CrossFit",
     "preset5": "Boks",
     "preset6": "Kolarstwo",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Naklejki",
+    "stickerSearchPlaceholder": "Szukaj naklejek…"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

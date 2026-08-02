@@ -727,7 +727,9 @@
     "preset4": "CrossFit",
     "preset5": "Boxeo",
     "preset6": "Ciclismo",
-    "stickerGif": "GIF"
+    "stickerGif": "GIF",
+    "stickerSticker": "Pegatinas",
+    "stickerSearchPlaceholder": "Buscar pegatinas…"
   },
   "reportBlock": {
     "report": "Denunciar usuario",
