@@ -14,6 +14,7 @@ import ViewShot from 'react-native-view-shot'
 import * as Sharing from 'expo-sharing'
 import * as LegacyFS from 'expo-file-system/legacy'
 import StoryViewer from '../components/StoryViewer'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const PRIMARY = '#7dc52e'
 const LIME = '#94e336'
@@ -157,6 +158,7 @@ function nowHHMM(offsetHours = 0) {
 export default function TrainingStatusScreen() {
   const { t, i18n } = useTranslation()
   const i18nLang = i18n.language ?? 'en'
+  const insets = useSafeAreaInsets()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   // Wiele relacji naraz (max 3): overview = lista aktywnych, editor = tworzenie NOWEJ.
@@ -272,7 +274,11 @@ export default function TrainingStatusScreen() {
         .eq('profile_id', me.id)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: true })
-      const stories = data ?? []
+      // "Start" na mapie "Kto jest na silowni" moze doczepic sam wpis live do
+      // goleg wiersza bez zdjecia/wideo (gdy nie mialo/a jeszcze prawdziwej
+      // relacji) — taki wpis nie jest prawdziwa relacja, wiec nie pokazujemy go
+      // tutaj (handleSave i tak zawsze wymaga zdjecia/wideo od uzytkownika)
+      const stories = (data ?? []).filter((s: any) => s.status_photo_url || s.video_url)
       setMyStories(stories)
       setMode(stories.length > 0 ? 'overview' : 'editor')
       // Reakcje na moje relacje (licznik wspolny dla calego zestawu)
@@ -1287,7 +1293,7 @@ export default function TrainingStatusScreen() {
       })()}
 
       <KeyboardAvoidingView
-        style={styles.bottomWrap}
+        style={[styles.bottomWrap, { paddingBottom: 30 + insets.bottom }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
@@ -1786,7 +1792,9 @@ const styles = StyleSheet.create({
   shareCloseBtn: { alignItems: 'center', paddingVertical: 10 },
   shareCloseBtnText: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
   statPillText: { fontSize: 11, color: '#fff', fontWeight: '600' },
-  bottomWrap: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 30 },
+  // zIndex wyzszy niz warstwy filtrow/efektow (2) — zaden efekt (kino, polaroid,
+  // cien u dolu...) nie moze zakryc przycisku udostepnienia
+  bottomWrap: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 30, zIndex: 8 },
   metaChipsRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   metaChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', maxWidth: '70%' },
   metaChipText: { fontSize: 12, color: '#fff', fontWeight: '700', flexShrink: 1 },
