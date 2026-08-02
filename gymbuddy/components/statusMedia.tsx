@@ -16,7 +16,10 @@ import { Ionicons } from '@expo/vector-icons'
 // napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
 // tapniecie zetonu skleja calosc z powrotem.
 export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string }
-export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string } & Partial<ActivityData>
+export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string } & Partial<ActivityData>
+
+// Emoji do wyboru jako "buzia" slidera (jak w IG) — stala paleta, wyswietlana w edytorze
+export const SLIDER_EMOJIS = ['❤️', '🔥', '😍', '💪', '😂', '👍'] as const
 
 // Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
 export const ACTIVITY_SPORTS = [
@@ -163,8 +166,8 @@ function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }
 
 // Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
 // PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
-export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl, stickerUrl }: {
-  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'
+export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl, stickerUrl, sliderEmoji }: {
+  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'
   variant?: number
   time?: string | null
   gym?: string | null
@@ -174,6 +177,7 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   chipIndex?: number
   gifUrl?: string | null
   stickerUrl?: string | null
+  sliderEmoji?: string | null
 }) {
   // Naklejka GIF: sama animacja, bez tekstu ani ramki — tylko zaokraglone rogi
   if (type === 'gif') {
@@ -186,6 +190,22 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   if (type === 'sticker') {
     if (!stickerUrl) return null
     return <Image source={{ uri: stickerUrl }} style={s.stickerImg} resizeMode="contain" />
+  }
+
+  // Naklejka slidera: STATYCZNY podglad (tor + buzia na srodku) — uzywany w edytorze
+  // i przy ogladaniu WLASNEJ relacji. Prawdziwe przeciaganie (dla widzow cudzej
+  // relacji) renderuje osobny, interaktywny komponent w StoryViewer.tsx
+  if (type === 'slider') {
+    return (
+      <View style={s.sliderWrap}>
+        {!!text && <Text style={s.sliderLabel}>{text}</Text>}
+        <View style={s.sliderTrack}>
+          <View style={[s.sliderHandle, { left: '50%', marginLeft: -22 }]}>
+            <Text style={{ fontSize: 20 }}>{sliderEmoji || '❤️'}</Text>
+          </View>
+        </View>
+      </View>
+    )
   }
 
   // Naklejka aktywnosci: karta ze wszystkimi wierszami albo pojedynczy
@@ -243,13 +263,16 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   return isPr ? <Pulse>{node}</Pulse> : <>{node}</>
 }
 
-// Naklejki w trybie ogladania (bez interakcji)
-export function OverlayPillsView({ status }: { status: any }) {
+// Naklejki w trybie ogladania (bez interakcji). hideTypes: typy pomijane tutaj,
+// bo wywolujacy renderuje dla nich wlasny (np. interaktywny) komponent
+export function OverlayPillsView({ status, hideTypes }: { status: any; hideTypes?: string[] }) {
   const overlays: StatusOverlay[] = Array.isArray(status?.overlays) ? status.overlays : []
   if (overlays.length === 0) return null
   return (
     <>
-      {overlays.map((ov, i) => (
+      {overlays.map((ov, i) => {
+        if (hideTypes?.includes(ov.type)) return null
+        return (
         <View
           key={i}
           style={[
@@ -267,9 +290,11 @@ export function OverlayPillsView({ status }: { status: any }) {
             chipIndex={ov.chip}
             gifUrl={ov.gifUrl}
             stickerUrl={ov.stickerUrl}
+            sliderEmoji={ov.sliderEmoji}
           />
         </View>
-      ))}
+        )
+      })}
     </>
   )
 }
@@ -331,4 +356,19 @@ const s = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
   },
   stickerImg: { width: 110, height: 110 },
+  sliderWrap: { width: 180, alignItems: 'center' },
+  sliderLabel: {
+    fontSize: 14, fontWeight: '800', color: '#fff', marginBottom: 10, textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
+  },
+  sliderTrack: {
+    width: '100%', height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)',
+    justifyContent: 'center',
+  },
+  sliderHandle: {
+    position: 'absolute', width: 44, height: 44, borderRadius: 22,
+    borderWidth: 1.5, borderColor: '#fff', backgroundColor: 'rgba(13,27,46,0.55)',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 5,
+  },
 })

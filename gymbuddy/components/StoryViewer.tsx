@@ -1,21 +1,76 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, ScrollView, PanResponder } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { supabase, incrementStatusView, reportUser, getStatusViewers } from '../lib/supabase'
+import { supabase, incrementStatusView, reportUser, getStatusViewers, setSliderResponse } from '../lib/supabase'
 import { OverlayPillsView, FilterLayer } from './statusMedia'
 
 const PRIMARY = '#7dc52e'
 const REACTION_EMOJIS = ['💪', '🔥', '👊']
+const SLIDER_TRACK_WIDTH = 180
 
 // Re-eksport dla ekranow, ktore importowaly stad naklejki
 export { OverlayPillsView as OverlayPills }
 
-// Jeden slajd: zdjecie (rozmyte tlo + contain) albo wideo (gra tylko gdy aktywne)
-function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolean; muted: boolean }) {
+// Naklejka slidera u WIDZA: przeciagana buzia po torze, puszczenie wysyla
+// odpowiedz (0-1). Na WLASNEJ relacji (disabled) to tylko statyczny podglad —
+// autor sredni wynik widzi na liscie swoich relacji, nie tutaj.
+function SliderOverlayViewer({ ov, statusId, disabled }: { ov: any; statusId: string; disabled: boolean }) {
+  const [value, setValue] = useState(0.5)
+  const valueRef = useRef(0.5)
+  valueRef.current = value
+  const startRef = useRef(0.5)
+  const [answered, setAnswered] = useState(false)
+
+  const responder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => { startRef.current = valueRef.current },
+      onPanResponderMove: (_, g) => {
+        setValue(Math.min(1, Math.max(0, startRef.current + g.dx / SLIDER_TRACK_WIDTH)))
+      },
+      onPanResponderRelease: () => {
+        setAnswered(true)
+        setSliderResponse(statusId, valueRef.current)
+      },
+    })
+  ).current
+
+  if (disabled) {
+    return (
+      <View style={sliderStyles.wrap} pointerEvents="none">
+        {!!ov.text && <Text style={sliderStyles.label}>{ov.text}</Text>}
+        <View style={sliderStyles.track}>
+          <View style={sliderStyles.trackLine} />
+          <View style={[sliderStyles.handle, { left: '50%', marginLeft: -22 }]}>
+            <Text style={{ fontSize: 20 }}>{ov.sliderEmoji || '❤️'}</Text>
+          </View>
+        </View>
+      </View>
+    )
+  }
+
+  return (
+    <View style={sliderStyles.wrap}>
+      {!!ov.text && <Text style={sliderStyles.label}>{ov.text}</Text>}
+      <View style={sliderStyles.track} {...responder.panHandlers}>
+        <View style={sliderStyles.trackLine} pointerEvents="none" />
+        <View style={[sliderStyles.handle, { left: `${value * 100}%`, marginLeft: -22 }, answered && sliderStyles.handleAnswered]} pointerEvents="none">
+          <Text style={{ fontSize: 20 }}>{ov.sliderEmoji || '❤️'}</Text>
+        </View>
+      </View>
+    </View>
+  )
+}
+
+// Jeden slajd: zdjecie (rozmyte tlo + contain) albo wideo (gra tylko gdy aktywne).
+// isOwn: naklejka slidera renderuje sie jako interaktywna (przeciagalna) tylko
+// dla WIDZOW cudzej relacji — na wlasnej to statyczny podglad (bez przeciagania)
+function StoryMedia({ person, isActive, muted, isOwn }: { person: any; isActive: boolean; muted: boolean; isOwn: boolean }) {
   const videoUrl = person.video_url || null
   const player = useVideoPlayer(videoUrl, p => { p.loop = true })
   useEffect(() => {
@@ -24,12 +79,25 @@ function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolea
     if (isActive) player.play(); else player.pause()
   }, [isActive, muted, videoUrl])
 
+  const sliderOv = (person.overlays ?? []).find((o: any) => o.type === 'slider')
+  const sliderNode = isActive && sliderOv ? (
+    <View
+      style={[
+        sliderStyles.anchor,
+        { left: `${Math.min(Math.max(sliderOv.x * 100, 2), 78)}%`, top: `${Math.min(Math.max(sliderOv.y * 100, 6), 84)}%` },
+      ]}
+    >
+      <SliderOverlayViewer ov={sliderOv} statusId={person.id} disabled={isOwn} />
+    </View>
+  ) : null
+
   if (videoUrl) {
     return (
       <View style={[styles.media, !isActive && styles.mediaHidden]}>
         <VideoView player={player} style={styles.media} contentFit="contain" nativeControls={false} />
         <FilterLayer id={person.filter} />
-        {isActive && <OverlayPillsView status={person} />}
+        {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+        {sliderNode}
       </View>
     )
   }
@@ -40,7 +108,8 @@ function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolea
       <View style={[styles.media, !isActive && styles.mediaHidden]}>
         <LinearGradient colors={['#24405f', '#0d1b2e']} style={styles.media} />
         <FilterLayer id={person.filter} />
-        {isActive && <OverlayPillsView status={person} />}
+        {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+        {sliderNode}
       </View>
     )
   }
@@ -50,7 +119,8 @@ function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolea
       <View style={[styles.media, { backgroundColor: 'rgba(0,0,0,0.35)' }]} />
       <Image source={{ uri }} style={styles.media} resizeMode="contain" />
       <FilterLayer id={person.filter} />
-      {isActive && <OverlayPillsView status={person} />}
+      {isActive && <OverlayPillsView status={person} hideTypes={['slider']} />}
+      {sliderNode}
     </View>
   )
 }
@@ -233,7 +303,13 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView style={styles.modal} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {people.map((p, i) => (
-          <StoryMedia key={p.id ?? `${p.profile_id}-${i}`} person={p} isActive={visible && i === index} muted={muted} />
+          <StoryMedia
+            key={p.id ?? `${p.profile_id}-${i}`}
+            person={p}
+            isActive={visible && i === index}
+            muted={muted}
+            isOwn={!!myProfile && p.profile_id === myProfile.id}
+          />
         ))}
 
         <LinearGradient
@@ -465,4 +541,23 @@ const styles = StyleSheet.create({
   reactionBtnActive: { backgroundColor: 'rgba(148,227,54,0.35)', borderWidth: 1.5, borderColor: '#94e336' },
   profileBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: PRIMARY, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9, marginTop: 14 },
   profileBtnText: { fontSize: 13, fontWeight: '700', color: '#0d1b2e' },
+})
+
+const sliderStyles = StyleSheet.create({
+  anchor: { position: 'absolute', zIndex: 5, maxWidth: '76%' },
+  wrap: { width: SLIDER_TRACK_WIDTH, alignItems: 'center' },
+  label: {
+    fontSize: 14, fontWeight: '800', color: '#fff', marginBottom: 10, textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
+  },
+  // track = wieksza strefa dotyku (44 wys.), trackLine = cienka widoczna kreska w srodku
+  track: { width: '100%', height: 44, justifyContent: 'center' },
+  trackLine: { width: '100%', height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)' },
+  handle: {
+    position: 'absolute', width: 44, height: 44, borderRadius: 22,
+    borderWidth: 1.5, borderColor: '#fff', backgroundColor: 'rgba(13,27,46,0.55)',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 5,
+  },
+  handleAnswered: { borderColor: '#94e336' },
 })

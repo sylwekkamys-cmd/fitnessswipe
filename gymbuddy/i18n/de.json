@@ -729,7 +729,8 @@
     "preset6": "Radfahren",
     "stickerGif": "GIF",
     "stickerSticker": "Sticker",
-    "stickerSearchPlaceholder": "Sticker suchen…"
+    "stickerSearchPlaceholder": "Sticker suchen…",
+    "stickerSlider": "Schieberegler"
   },
   "reportBlock": {
     "report": "Nutzer melden",

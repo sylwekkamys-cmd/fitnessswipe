@@ -729,7 +729,8 @@
     "preset6": "Kolarstwo",
     "stickerGif": "GIF",
     "stickerSticker": "Naklejki",
-    "stickerSearchPlaceholder": "Szukaj naklejek…"
+    "stickerSearchPlaceholder": "Szukaj naklejek…",
+    "stickerSlider": "Slider"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

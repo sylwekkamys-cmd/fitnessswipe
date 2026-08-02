@@ -729,7 +729,8 @@
     "preset6": "Fietsen",
     "stickerGif": "GIF",
     "stickerSticker": "Stickers",
-    "stickerSearchPlaceholder": "Stickers zoeken…"
+    "stickerSearchPlaceholder": "Stickers zoeken…",
+    "stickerSlider": "Schuifregelaar"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

@@ -729,7 +729,8 @@
     "preset6": "Ciclism",
     "stickerGif": "GIF",
     "stickerSticker": "Autocolante",
-    "stickerSearchPlaceholder": "Caută autocolante…"
+    "stickerSearchPlaceholder": "Caută autocolante…",
+    "stickerSlider": "Cursor"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

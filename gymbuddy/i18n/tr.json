@@ -729,7 +729,8 @@
     "preset6": "Bisiklet",
     "stickerGif": "GIF",
     "stickerSticker": "Çıkartmalar",
-    "stickerSearchPlaceholder": "Çıkartma ara…"
+    "stickerSearchPlaceholder": "Çıkartma ara…",
+    "stickerSlider": "Kaydırıcı"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

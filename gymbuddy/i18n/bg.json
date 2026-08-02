@@ -729,7 +729,8 @@
     "preset6": "Колоездене",
     "stickerGif": "GIF",
     "stickerSticker": "Стикери",
-    "stickerSearchPlaceholder": "Търсене на стикери…"
+    "stickerSearchPlaceholder": "Търсене на стикери…",
+    "stickerSlider": "Плъзгач"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

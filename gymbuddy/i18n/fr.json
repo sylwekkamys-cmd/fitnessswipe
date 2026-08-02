@@ -729,7 +729,8 @@
     "preset6": "Vélo",
     "stickerGif": "GIF",
     "stickerSticker": "Autocollants",
-    "stickerSearchPlaceholder": "Rechercher des autocollants…"
+    "stickerSearchPlaceholder": "Rechercher des autocollants…",
+    "stickerSlider": "Curseur"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

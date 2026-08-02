@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
-import { supabase, getMyProfile } from '../lib/supabase'
-import { StickerContent, FilterLayer, STATUS_FILTERS, STATUS_EFFECTS, FILTER_SWATCHES, ACTIVITY_SPORTS, activityChips, OverlayPillsView } from '../components/statusMedia'
+import { supabase, getMyProfile, getSliderSummaries } from '../lib/supabase'
+import { StickerContent, FilterLayer, STATUS_FILTERS, STATUS_EFFECTS, FILTER_SWATCHES, ACTIVITY_SPORTS, activityChips, OverlayPillsView, SLIDER_EMOJIS } from '../components/statusMedia'
 import ViewShot from 'react-native-view-shot'
 import * as Sharing from 'expo-sharing'
 import * as LegacyFS from 'expo-file-system/legacy'
@@ -31,7 +31,7 @@ const STATUS_PRESET_ICONS = [
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
 // id + chip = pojedynczy zeton po rozsypaniu (kazdy przeciagany osobno)
-type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string }
+type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif' | 'sticker' | 'slider'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string; stickerUrl?: string; sliderEmoji?: string }
 
 // Przeciagalna naklejka (styl IG): pozycja znormalizowana 0..1 wzgledem obszaru medium.
 // Przeciaganie = zmiana pozycji, tapniecie = zmiana stylu (3 warianty), ✕ = usuniecie,
@@ -122,6 +122,7 @@ function StickerPill({ ov, time, gym, area, onChange, onCycle, onRemove, onScale
           chipIndex={ov.chip}
           gifUrl={ov.gifUrl}
           stickerUrl={ov.stickerUrl}
+          sliderEmoji={ov.sliderEmoji}
         />
       </View>
       <TouchableOpacity style={stickerStyles.removeBtn} onPress={onRemove} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
@@ -176,7 +177,7 @@ export default function TrainingStatusScreen() {
   const [effects, setEffects] = useState<string[]>([])
   const filterValue = [filterId, ...effects].filter(Boolean).join('|')
   // Kolumna narzedzi po prawej (jak IG): zwiniete ikony, tap rozwija panel obok
-  const [toolOpen, setToolOpen] = useState<'filters' | 'effects' | 'stickers' | 'time' | 'presets' | 'activity' | null>(null)
+  const [toolOpen, setToolOpen] = useState<'filters' | 'effects' | 'stickers' | 'time' | 'presets' | 'activity' | 'slider' | null>(null)
   // Naklejka aktywnosci: wybrany sport otwiera formularz (prefill z Apple Health / Health Connect)
   const [actSport, setActSport] = useState<string | null>(null)
   const [actDist, setActDist] = useState('')
@@ -210,6 +211,7 @@ export default function TrainingStatusScreen() {
   const [gymResults, setGymResults] = useState<string[]>([])
   const [gymSearchLoading, setGymSearchLoading] = useState(false)
   const [reactions, setReactions] = useState<Record<string, number>>({})
+  const [sliderSummaries, setSliderSummaries] = useState<Record<string, { avg: number; count: number }>>({})
   const [myId, setMyId] = useState<string | null>(null)
   const [showViewers, setShowViewers] = useState(false)
   const [viewers, setViewers] = useState<any[]>([])
@@ -272,6 +274,9 @@ export default function TrainingStatusScreen() {
       const counts: Record<string, number> = {}
       ;(rx ?? []).forEach((r: any) => { counts[r.emoji] = (counts[r.emoji] ?? 0) + 1 })
       setReactions(counts)
+      // Srednie odpowiedzi slidera per relacja (tylko te ze naklejka slidera)
+      const withSlider = stories.filter((s: any) => (s.overlays ?? []).some((o: any) => o.type === 'slider')).map((s: any) => s.id)
+      setSliderSummaries(await getSliderSummaries(withSlider))
     } catch (e) { }
     finally { setLoading(false) }
   }
@@ -386,6 +391,12 @@ export default function TrainingStatusScreen() {
       setOverlays(prev => [...prev.filter(o => o.type !== 'gif'), { type: 'gif' as const, gifUrl: url, x: 0.2, y: 0.35, v: 0 }])
       setShowGifPicker(false)
     }
+  }
+  // Slider: pojedyncza naklejka na relacje (jak text/pr) — widzowie przeciagaja
+  // buzie w StoryViewer, autor zobaczy srednia na liscie swoich relacji
+  function addSliderOverlay(emoji: string) {
+    setOverlays(prev => [...prev.filter(o => o.type !== 'slider'), { type: 'slider' as const, sliderEmoji: emoji, x: 0.2, y: 0.45, v: 0 }])
+    setToolOpen(null)
   }
 
   // Naklejka aktywnosci: wybor sportu -> formularz z prefillowaniem z dzisiejszego
@@ -904,6 +915,17 @@ export default function TrainingStatusScreen() {
                     <Ionicons name="eye-outline" size={12} color="rgba(255,255,255,0.7)" />
                     <Text style={styles.statPillText}>{story.view_count ?? 0}</Text>
                   </TouchableOpacity>
+                  {(() => {
+                    const sliderOv = (story.overlays ?? []).find((o: any) => o.type === 'slider')
+                    const sum = sliderOv ? sliderSummaries[story.id] : null
+                    if (!sliderOv || !sum || sum.count === 0) return null
+                    return (
+                      <TouchableOpacity style={styles.statPill} onPress={openViewers}>
+                        <Text style={{ fontSize: 12 }}>{sliderOv.sliderEmoji || '❤️'}</Text>
+                        <Text style={styles.statPillText}>{Math.round(sum.avg * 100)}% · {sum.count}</Text>
+                      </TouchableOpacity>
+                    )
+                  })()}
                   {story.looking_for_partner ? <Text style={{ fontSize: 12 }}>🤝</Text> : null}
                 </View>
               </View>
@@ -1110,10 +1132,10 @@ export default function TrainingStatusScreen() {
               )}
               <View style={styles.toolItem}>
                 <TouchableOpacity
-                  style={[styles.toolBtn, (toolOpen === 'stickers' || toolOpen === 'time') && styles.toolBtnActive]}
-                  onPress={() => setToolOpen(o => (o === 'stickers' || o === 'time' ? null : 'stickers'))}
+                  style={[styles.toolBtn, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider') && styles.toolBtnActive]}
+                  onPress={() => setToolOpen(o => (o === 'stickers' || o === 'time' || o === 'slider' ? null : 'stickers'))}
                 >
-                  <Text style={[styles.toolBtnAa, (toolOpen === 'stickers' || toolOpen === 'time' || overlays.length > 0) && { color: LIME }]}>Aa</Text>
+                  <Text style={[styles.toolBtnAa, (toolOpen === 'stickers' || toolOpen === 'time' || toolOpen === 'slider' || overlays.length > 0) && { color: LIME }]}>Aa</Text>
                 </TouchableOpacity>
                 <Text style={styles.toolLabel}>{t('trainingStatus.toolStickers')}</Text>
               </View>
@@ -1189,7 +1211,7 @@ export default function TrainingStatusScreen() {
                 Bez medium ustawiaja tylko pola statusu; reszta to czyste naklejki, wiec wymaga medium. */}
             {toolOpen === 'stickers' && (
               <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
-                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif', 'sticker'] as const) : (['time', 'gym'] as const)).map(tp => {
+                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif', 'sticker', 'slider'] as const) : (['time', 'gym'] as const)).map(tp => {
                   const active = overlays.some(o => o.type === tp)
                   const label =
                     tp === 'time' ? t('trainingStatus.stickerTime')
@@ -1199,10 +1221,12 @@ export default function TrainingStatusScreen() {
                     : tp === 'day' ? t('trainingStatus.stickerDay')
                     : tp === 'pr' ? t('trainingStatus.stickerPr')
                     : tp === 'gif' ? t('trainingStatus.stickerGif')
-                    : t('trainingStatus.stickerSticker')
+                    : tp === 'sticker' ? t('trainingStatus.stickerSticker')
+                    : t('trainingStatus.stickerSlider')
                   const onPress = () => {
                     if (tp === 'gif') { setToolOpen(null); openGifPicker('gif'); return }
                     if (tp === 'sticker') { setToolOpen(null); openGifPicker('sticker'); return }
+                    if (tp === 'slider') { setToolOpen('slider'); return }
                     if (active) { toggleOverlay(tp); setToolOpen(null); return }
                     if (tp === 'time') { setToolOpen('time'); return }
                     if (tp === 'gym') { setToolOpen(null); openGymSearch(); return }
@@ -1254,6 +1278,27 @@ export default function TrainingStatusScreen() {
                 <TouchableOpacity style={styles.toolPanelRow} onPress={() => { setToolOpen(null); setShowTimePicker(true) }}>
                   <Text style={styles.toolPanelText}>{t('trainingStatus.otherTime') || 'Inna…'}</Text>
                 </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Slider: wybor buzi -> od razu ladowany jako naklejka (widzowie beda ja przeciagac) */}
+            {toolOpen === 'slider' && (
+              <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
+                {SLIDER_EMOJIS.map(emoji => (
+                  <TouchableOpacity key={emoji} style={styles.toolPanelRow} onPress={() => addSliderOverlay(emoji)}>
+                    <Text style={{ fontSize: 18 }}>{emoji}</Text>
+                    <Text style={styles.toolPanelText}>{t('trainingStatus.stickerSlider')}</Text>
+                  </TouchableOpacity>
+                ))}
+                {overlays.some(o => o.type === 'slider') && (
+                  <TouchableOpacity
+                    style={styles.toolPanelRow}
+                    onPress={() => { setOverlays(prev => prev.filter(o => o.type !== 'slider')); setToolOpen(null) }}
+                  >
+                    <Ionicons name="trash-outline" size={14} color="#ff6b6b" />
+                    <Text style={[styles.toolPanelText, { color: '#ff6b6b' }]}>{t('trainingStatus.delete')}</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 

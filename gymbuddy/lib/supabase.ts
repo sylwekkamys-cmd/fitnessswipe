@@ -675,6 +675,41 @@ export async function incrementStatusView(profileId: string, viewerId: string): 
   }
 }
 
+// Odpowiedz widza na naklejke-slider (0-1) — jedna na relacje na widza, wielokrotne
+// przeciagniecie po prostu nadpisuje poprzednia wartosc (upsert)
+export async function setSliderResponse(statusId: string, value: number): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from('status_slider_responses').upsert(
+      { status_id: statusId, responder_id: user.id, value: Math.min(1, Math.max(0, value)) },
+      { onConflict: 'status_id,responder_id' }
+    )
+  } catch (e) {
+    console.log('setSliderResponse error:', e)
+  }
+}
+
+// Srednie odpowiedzi slidera dla wielu relacji naraz — jedno zapytanie,
+// agregacja w JS (ten sam wzorzec co liczenie reakcji, bez RPC)
+export async function getSliderSummaries(statusIds: string[]): Promise<Record<string, { avg: number; count: number }>> {
+  if (statusIds.length === 0) return {}
+  try {
+    const { data } = await supabase.from('status_slider_responses').select('status_id, value').in('status_id', statusIds)
+    const sums: Record<string, { sum: number; count: number }> = {}
+    ;(data ?? []).forEach((r: any) => {
+      if (!sums[r.status_id]) sums[r.status_id] = { sum: 0, count: 0 }
+      sums[r.status_id].sum += r.value
+      sums[r.status_id].count += 1
+    })
+    const out: Record<string, { avg: number; count: number }> = {}
+    Object.entries(sums).forEach(([id, { sum, count }]) => { out[id] = { avg: count ? sum / count : 0, count } })
+    return out
+  } catch (e) {
+    return {}
+  }
+}
+
 export async function logRestDay(profileId: string): Promise<{ success: boolean; currentStreak: number; restDaysLeft?: number; error?: string }> {
   try {
     const { data, error } = await supabase.rpc('log_rest_day', { p_profile_id: profileId })

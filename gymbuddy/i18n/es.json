@@ -729,7 +729,8 @@
     "preset6": "Ciclismo",
     "stickerGif": "GIF",
     "stickerSticker": "Pegatinas",
-    "stickerSearchPlaceholder": "Buscar pegatinas…"
+    "stickerSearchPlaceholder": "Buscar pegatinas…",
+    "stickerSlider": "Control deslizante"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

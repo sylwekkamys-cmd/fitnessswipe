@@ -729,7 +729,8 @@
     "preset6": "Cycling",
     "stickerGif": "GIF",
     "stickerSticker": "Stickers",
-    "stickerSearchPlaceholder": "Search stickers…"
+    "stickerSearchPlaceholder": "Search stickers…",
+    "stickerSlider": "Slider"
   },
   "reportBlock": {
     "report": "Report user",
