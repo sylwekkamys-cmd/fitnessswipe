@@ -27,16 +27,23 @@ export const ACTIVITY_SPORTS = [
   { key: 'swim', emoji: '🥽' },
 ] as const
 
-// Zetony statystyk budowane z danych aktywnosci (do 5 sztuk zaleznie od pol,
-// kazdy niezaleznie przeciagany po rozsypaniu — patrz cycleOverlay)
-export function activityChips(act: ActivityData): { val: string; sub: string; color: string; icon: string }[] {
-  return [
-    { val: act.m, sub: act.mu, color: '#94e336', icon: 'navigate-outline' },
-    ...(act.tm ? [{ val: act.tm, sub: 'CZAS', color: '#4fc3f7', icon: 'time-outline' }] : []),
-    ...(act.ex ? [{ val: act.ex.split(' ')[0], sub: act.ex.split(' ').slice(1).join(' ') || ' ', color: '#f0b429', icon: 'speedometer-outline' }] : []),
-    ...(act.hr ? [{ val: act.hr, sub: 'TĘTNO', color: '#ff6b6b', icon: 'heart-outline' }] : []),
-    ...(act.kcal ? [{ val: act.kcal, sub: 'KCAL', color: '#b388ff', icon: 'flame-outline' }] : []),
-  ]
+// Wiersze statystyk budowane z danych aktywnosci (do 5 sztuk zaleznie od pol,
+// kazdy niezaleznie przeciagany po rozsypaniu — patrz cycleOverlay). Kazdy
+// wiersz: biala ikona w kolku + wartosc z jednostka + podpis pod spodem.
+export function activityChips(act: ActivityData): { value: string; label: string; icon: string }[] {
+  const isGym = act.sport === 'gym'
+  const isRide = act.sport === 'ride'
+  const rows: { value: string; label: string; icon: string }[] = []
+  if (isGym) {
+    rows.push({ value: `${act.m} min`, label: 'CZAS', icon: 'time-outline' })
+  } else {
+    rows.push({ value: `${act.m} km`, label: 'DYSTANS', icon: 'navigate-outline' })
+    if (act.tm) rows.push({ value: act.tm, label: 'CZAS', icon: 'time-outline' })
+    if (act.ex) rows.push({ value: act.ex, label: isRide ? 'PRĘDKOŚĆ' : 'TEMPO', icon: 'speedometer-outline' })
+  }
+  if (act.hr) rows.push({ value: `${act.hr} bpm`, label: 'TĘTNO ŚREDNIE', icon: 'heart-outline' })
+  if (act.kcal) rows.push({ value: `${act.kcal} kcal`, label: 'KALORIE', icon: 'flame-outline' })
+  return rows
 }
 
 export const STATUS_FILTERS = ['', 'warm', 'cool', 'neon', 'sunset', 'noir', 'sepia', 'rose', 'ice', 'forest', 'gold', 'fade'] as const
@@ -138,6 +145,21 @@ export const FILTER_SWATCHES: Record<string, [string, string]> = {
   fade: ['#f2f2f6', '#b9b9c4'],
 }
 
+// Pojedynczy wiersz statystyki: biala ikona w kolku + wartosc z jednostka + podpis
+function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }) {
+  return (
+    <View style={s.actRow}>
+      <View style={s.actRowIconWrap}>
+        <Ionicons name={r.icon as any} size={19} color="#fff" />
+      </View>
+      <View>
+        <Text style={s.actRowValue} numberOfLines={1}>{r.value}</Text>
+        <Text style={s.actRowLabel} numberOfLines={1}>{r.label}</Text>
+      </View>
+    </View>
+  )
+}
+
 // Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
 // PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
 export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex }: {
@@ -150,38 +172,23 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   sportLabel?: string
   chipIndex?: number
 }) {
-  // Naklejka aktywnosci: duzy napis albo pojedynczy zeton (chipIndex po rozsypaniu)
+  // Naklejka aktywnosci: karta ze wszystkimi wierszami albo pojedynczy
+  // odlaczony wiersz (chipIndex po rozsypaniu — patrz cycleOverlay)
   if (type === 'activity' && act) {
-    const sport = ACTIVITY_SPORTS.find(sp => sp.key === act.sport)
-    const label = `${(sportLabel ?? act.sport).toUpperCase()} ${sport?.emoji ?? ''}`.trim()
-    if (typeof chipIndex === 'number' || (((variant ?? 0) % 2 + 2) % 2 === 1)) {
-      const chips = activityChips(act)
-      // Pojedynczy zeton (niezaleznie przeciagany) albo — dla starszych relacji — caly rzad
-      const toRender = typeof chipIndex === 'number' ? (chips[chipIndex] ? [chips[chipIndex]] : []) : chips
-      if (toRender.length === 0) return null
+    const rows = activityChips(act)
+    if (typeof chipIndex === 'number') {
+      const r = rows[chipIndex]
+      if (!r) return null
       return (
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {toRender.map((c, i) => (
-            <View key={i} style={[s.actChip, { borderColor: c.color, transform: [{ rotate: `${[-6, 3, 7][(typeof chipIndex === 'number' ? chipIndex : i) % 3]}deg` }] }]}>
-              <View style={s.actChipIconWrap}>
-                <Ionicons name={c.icon as any} size={14} color="#fff" />
-              </View>
-              <Text style={s.actChipVal} numberOfLines={1}>{c.val}</Text>
-              <Text style={[s.actChipSub, { color: c.color }]} numberOfLines={1}>{c.sub}</Text>
-            </View>
-          ))}
+        <View style={s.actCard}>
+          <ActStatRow r={r} />
         </View>
       )
     }
+    if (rows.length === 0) return null
     return (
-      <View style={{ alignItems: 'center' }}>
-        <Text style={s.actBigValue}>{act.m}</Text>
-        <Text style={s.actBigLabel}>{act.mu} · {label}</Text>
-        {(act.tm || act.ex || act.hr || act.kcal) ? (
-          <Text style={s.actBigSub}>
-            {[act.tm, act.ex, act.hr ? `${act.hr} bpm` : null, act.kcal ? `${act.kcal} kcal` : null].filter(Boolean).join(' · ')}
-          </Text>
-        ) : null}
+      <View style={s.actCard}>
+        {rows.map((r, i) => <ActStatRow key={i} r={r} />)}
       </View>
     )
   }
@@ -284,27 +291,16 @@ const s = StyleSheet.create({
   },
   whitePillIcon: { fontSize: 14 },
   whitePillText: { fontSize: 14, fontWeight: '900', color: '#16233a', letterSpacing: 0.6 },
-  actBigValue: {
-    fontSize: 52, fontWeight: '900', color: '#fff', lineHeight: 56,
-    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 10,
+  actCard: {
+    backgroundColor: 'rgba(16,29,48,0.9)', borderRadius: 20,
+    paddingVertical: 14, paddingHorizontal: 16, gap: 14,
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 6,
   },
-  actBigLabel: {
-    fontSize: 15, fontWeight: '900', color: '#94e336', letterSpacing: 2, marginTop: 2,
-    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
+  actRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  actRowIconWrap: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  actBigSub: {
-    fontSize: 12.5, fontWeight: '600', color: 'rgba(255,255,255,0.85)', marginTop: 3,
-    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 6,
-  },
-  actChip: {
-    width: 74, borderRadius: 18, backgroundColor: 'rgba(10,16,28,0.82)',
-    borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 6,
-    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
-  },
-  actChipIconWrap: {
-    width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 5,
-  },
-  actChipVal: { fontSize: 13, fontWeight: '900', color: '#fff', textAlign: 'center' },
-  actChipSub: { fontSize: 7.5, fontWeight: '800', marginTop: 2, letterSpacing: 0.4, textAlign: 'center' },
+  actRowValue: { fontSize: 19, fontWeight: '800', color: '#fff' },
+  actRowLabel: { fontSize: 10.5, fontWeight: '700', color: 'rgba(200,215,235,0.65)', letterSpacing: 0.8, marginTop: 2 },
 })
