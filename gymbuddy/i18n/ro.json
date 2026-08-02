@@ -737,7 +737,13 @@
     "countdownReminded": "Memento setat",
     "countdownReminderTitle": "⏳ Numărătoarea s-a încheiat",
     "countdownReminderBody": "Timpul a expirat — vezi ce se întâmplă!",
-    "countdownCustom": "Timp personalizat…"
+    "countdownCustom": "Timp personalizat…",
+    "effect_light": "Scurgere de lumină",
+    "effect_prism": "Prismă",
+    "effect_shadow": "Umbră jos",
+    "effect_sparkle": "Sclipici",
+    "effect_polaroid": "Polaroid",
+    "effect_film": "Cinema"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

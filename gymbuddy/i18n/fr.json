@@ -737,7 +737,13 @@
     "countdownReminded": "Rappel programmé",
     "countdownReminderTitle": "⏳ Le compte à rebours est terminé",
     "countdownReminderBody": "C'est l'heure — jette un œil !",
-    "countdownCustom": "Durée personnalisée…"
+    "countdownCustom": "Durée personnalisée…",
+    "effect_light": "Fuite de lumière",
+    "effect_prism": "Prisme",
+    "effect_shadow": "Ombre en bas",
+    "effect_sparkle": "Étincelles",
+    "effect_polaroid": "Polaroid",
+    "effect_film": "Cinéma"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

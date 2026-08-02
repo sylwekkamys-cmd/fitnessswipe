@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { supabase, getMyProfile, getSliderSummaries } from '../lib/supabase'
-import { StickerContent, FilterLayer, STATUS_FILTERS, STATUS_EFFECTS, FILTER_SWATCHES, ACTIVITY_SPORTS, activityChips, OverlayPillsView, SLIDER_EMOJIS } from '../components/statusMedia'
+import { StickerContent, FilterLayer, STATUS_FILTERS, STATUS_EFFECTS, FILTER_SWATCHES, EFFECT_ICONS, ACTIVITY_SPORTS, activityChips, OverlayPillsView, SLIDER_EMOJIS } from '../components/statusMedia'
 import ViewShot from 'react-native-view-shot'
 import * as Sharing from 'expo-sharing'
 import * as LegacyFS from 'expo-file-system/legacy'
@@ -1123,7 +1123,7 @@ export default function TrainingStatusScreen() {
                         onPress={() => setEffects(prev => active ? prev.filter(x => x !== ef) : [...prev, ef])}
                       >
                         <View style={[styles.swatchCircle, styles.swatchCircleEffect, active && styles.swatchCircleActive]}>
-                          <Ionicons name="sparkles" size={18} color={active ? BG : '#fff'} />
+                          <Ionicons name={(EFFECT_ICONS[ef] ?? 'sparkles') as any} size={18} color={active ? BG : '#fff'} />
                         </View>
                         <Text style={[styles.swatchLabel, active && { color: LIME, fontWeight: '800' }]} numberOfLines={1}>
                           {t('trainingStatus.effect_' + ef)}

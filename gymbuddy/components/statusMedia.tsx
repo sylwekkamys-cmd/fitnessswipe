@@ -66,9 +66,22 @@ export function activityChips(act: ActivityData): { value: string; label: string
 
 export const STATUS_FILTERS = ['', 'warm', 'cool', 'neon', 'sunset', 'noir', 'sepia', 'rose', 'ice', 'forest', 'gold', 'fade'] as const
 
-// Efekty nakladane NA filtr (mozna laczyc): winieta + ramki.
+// Efekty nakladane NA filtr (mozna laczyc): winieta + ramki + kilka nowych.
 // W bazie jada razem z filtrem w jednej kolumnie, rozdzielone "|" (np. "warm|vignette|frame")
-export const STATUS_EFFECTS = ['vignette', 'frame', 'framegold'] as const
+export const STATUS_EFFECTS = ['vignette', 'frame', 'framegold', 'light', 'prism', 'shadow', 'sparkle', 'polaroid', 'film'] as const
+
+// Ikona na kolku w pasku wyboru efektow (edytor relacji)
+export const EFFECT_ICONS: Record<string, string> = {
+  vignette: 'contrast-outline',
+  frame: 'square-outline',
+  framegold: 'diamond-outline',
+  light: 'flash-outline',
+  prism: 'color-palette-outline',
+  shadow: 'moon-outline',
+  sparkle: 'sparkles-outline',
+  polaroid: 'images-outline',
+  film: 'film-outline',
+}
 
 // Nakladka filtru/efektow: przyjmuje pojedynczy filtr ("warm") albo zlozenie ("warm|vignette")
 export function FilterLayer({ id }: { id?: string | null }) {
@@ -126,6 +139,54 @@ function SingleLayer({ id }: { id: string }) {
           <View style={[s.matte, { borderColor: '#101820' }]} />
           <View style={[s.matteGoldOuter, { borderColor: '#f0b429' }]} />
           <View style={[s.matteLine, { borderColor: 'rgba(240,180,41,0.75)' }]} />
+        </View>
+      )
+    case 'light':
+      // Blask/light leak: cieply rozblysk z rogu, jak przypadkowe swiatlo na kliszy
+      return (
+        <LinearGradient
+          colors={['rgba(255,190,70,0.4)', 'rgba(255,150,50,0.16)', 'rgba(255,150,50,0)']}
+          start={{ x: 1, y: 0 }} end={{ x: 0.3, y: 0.55 }}
+          style={s.fill} pointerEvents="none"
+        />
+      )
+    case 'prism':
+      // Teczowy pas swiatla po przekatnej (efekt pryzmatu na obiektywie)
+      return (
+        <LinearGradient
+          colors={['rgba(255,90,90,0.16)', 'rgba(255,200,60,0.14)', 'rgba(120,255,140,0.12)', 'rgba(80,180,255,0.14)', 'rgba(190,110,255,0.16)']}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.35 }}
+          style={s.fill} pointerEvents="none"
+        />
+      )
+    case 'shadow':
+      // Przyciemnienie SAMEGO dolu (nie rogow jak winieta) — czytelnosc podpisu na jasnym zdjeciu
+      return (
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.55)']}
+          locations={[0, 0.55, 1]}
+          style={s.fill} pointerEvents="none"
+        />
+      )
+    case 'sparkle':
+      // Rozrzucone iskierki w stalych miejscach (nie losowe — stabilne miedzy renderami)
+      return (
+        <View style={s.fill} pointerEvents="none">
+          <Ionicons name="sparkles" size={22} color="rgba(255,255,255,0.9)" style={[s.sparkleDot, { top: '10%', left: '16%' }]} />
+          <Ionicons name="sparkles" size={13} color="rgba(255,255,255,0.7)" style={[s.sparkleDot, { top: '20%', right: '14%' }]} />
+          <Ionicons name="sparkles" size={17} color="rgba(255,255,255,0.6)" style={[s.sparkleDot, { bottom: '30%', left: '10%' }]} />
+          <Ionicons name="sparkles" size={11} color="rgba(255,255,255,0.75)" style={[s.sparkleDot, { bottom: '16%', right: '20%' }]} />
+        </View>
+      )
+    case 'polaroid':
+      // Gruby biale obramowanie u dolu (jak podpis na odbitce polaroid) — cienkie po bokach/gorze
+      return <View style={[s.fill, s.polaroidFrame]} pointerEvents="none" />
+    case 'film':
+      // Kinowe czarne pasy gora/dol (crop do panoramy)
+      return (
+        <View style={s.fill} pointerEvents="none">
+          <View style={s.filmBar} />
+          <View style={[s.filmBar, { top: undefined, bottom: 0 }]} />
         </View>
       )
     default:
@@ -359,6 +420,10 @@ const s = StyleSheet.create({
   // Cienka rama przy krawedzi ekranu + wewnetrzny wlosek oddzielajacy od zdjecia
   edgeBorder: { ...StyleSheet.absoluteFillObject, borderWidth: 7, zIndex: 2 },
   edgeHairline: { position: 'absolute', top: 7, left: 7, right: 7, bottom: 7, borderWidth: 1, zIndex: 2 },
+  sparkleDot: { position: 'absolute', zIndex: 2 },
+  // Cienka biala ramka po bokach/gorze, gruba u dolu — jak podpis pod zdjeciem polaroid
+  polaroidFrame: { borderColor: '#ffffff', borderWidth: 8, borderBottomWidth: 70, zIndex: 2 },
+  filmBar: { position: 'absolute', top: 0, left: 0, right: 0, height: '11%', backgroundColor: '#000', zIndex: 2 },
   bigText: {
     fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 0.5,
     textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,

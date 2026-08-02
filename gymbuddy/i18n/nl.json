@@ -737,7 +737,13 @@
     "countdownReminded": "Herinnering ingesteld",
     "countdownReminderTitle": "⏳ Het aftellen is voorbij",
     "countdownReminderBody": "Tijd is om — neem een kijkje!",
-    "countdownCustom": "Eigen tijd…"
+    "countdownCustom": "Eigen tijd…",
+    "effect_light": "Lichtlek",
+    "effect_prism": "Prisma",
+    "effect_shadow": "Schaduw onder",
+    "effect_sparkle": "Fonkeling",
+    "effect_polaroid": "Polaroid",
+    "effect_film": "Bioscoop"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

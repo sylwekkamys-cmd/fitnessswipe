@@ -737,7 +737,13 @@
     "countdownReminded": "Напомнянето е зададено",
     "countdownReminderTitle": "⏳ Обратното броене приключи",
     "countdownReminderBody": "Времето изтече — виж какво става!",
-    "countdownCustom": "Персонализирано време…"
+    "countdownCustom": "Персонализирано време…",
+    "effect_light": "Светлинно изтичане",
+    "effect_prism": "Призма",
+    "effect_shadow": "Сянка отдолу",
+    "effect_sparkle": "Искри",
+    "effect_polaroid": "Полароид",
+    "effect_film": "Кино"
   },
   "reportBlock": {
     "report": "Докладвай потребителя",

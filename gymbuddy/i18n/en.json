@@ -737,7 +737,13 @@
     "countdownReminded": "Reminder set",
     "countdownReminderTitle": "⏳ Countdown is over",
     "countdownReminderBody": "Time's up — check it out!",
-    "countdownCustom": "Custom time…"
+    "countdownCustom": "Custom time…",
+    "effect_light": "Light leak",
+    "effect_prism": "Prism",
+    "effect_shadow": "Bottom shadow",
+    "effect_sparkle": "Sparkle",
+    "effect_polaroid": "Polaroid",
+    "effect_film": "Cinema"
   },
   "reportBlock": {
     "report": "Report user",

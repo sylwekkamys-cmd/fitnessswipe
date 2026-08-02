@@ -737,7 +737,13 @@
     "countdownReminded": "Zaplanowano",
     "countdownReminderTitle": "⏳ Odliczanie się skończyło",
     "countdownReminderBody": "Czas minął — sprawdź co u niej/niego!",
-    "countdownCustom": "Własny czas…"
+    "countdownCustom": "Własny czas…",
+    "effect_light": "Blask",
+    "effect_prism": "Pryzmat",
+    "effect_shadow": "Cień u dołu",
+    "effect_sparkle": "Iskierki",
+    "effect_polaroid": "Polaroid",
+    "effect_film": "Kino"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",
