@@ -726,7 +726,8 @@
     "preset3": "Cardio",
     "preset4": "CrossFit",
     "preset5": "Box",
-    "preset6": "Ciclism"
+    "preset6": "Ciclism",
+    "stickerGif": "GIF"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

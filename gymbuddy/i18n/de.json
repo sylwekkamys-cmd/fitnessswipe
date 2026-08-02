@@ -726,7 +726,8 @@
     "preset3": "Cardio",
     "preset4": "CrossFit",
     "preset5": "Boxen",
-    "preset6": "Radfahren"
+    "preset6": "Radfahren",
+    "stickerGif": "GIF"
   },
   "reportBlock": {
     "report": "Nutzer melden",

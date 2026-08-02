@@ -726,7 +726,8 @@
     "preset3": "Cardio",
     "preset4": "CrossFit",
     "preset5": "Boxeo",
-    "preset6": "Ciclismo"
+    "preset6": "Ciclismo",
+    "stickerGif": "GIF"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

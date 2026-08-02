@@ -726,7 +726,8 @@
     "preset3": "Kardiyo",
     "preset4": "CrossFit",
     "preset5": "Boks",
-    "preset6": "Bisiklet"
+    "preset6": "Bisiklet",
+    "stickerGif": "GIF"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

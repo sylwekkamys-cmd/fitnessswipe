@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, Animated } from 'react-native'
+import { View, Text, StyleSheet, Animated, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons'
 // napis na osobne, niezaleznie przeciagane zetony (id + chip = indeks zetonu);
 // tapniecie zetonu skleja calosc z powrotem.
 export type ActivityData = { sport: string; m: string; mu: string; tm?: string; ex?: string; hr?: string; kcal?: string }
-export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number } & Partial<ActivityData>
+export type StatusOverlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'; x: number; y: number; v?: number; text?: string; s?: number; id?: string; chip?: number; gifUrl?: string } & Partial<ActivityData>
 
 // Sporty do naklejki aktywnosci (etykiety przez i18n: activity.<key>)
 export const ACTIVITY_SPORTS = [
@@ -163,8 +163,8 @@ function ActStatRow({ r }: { r: { value: string; label: string; icon: string } }
 
 // Tresc naklejki w wybranym stylu (v: 0 szklana / 1 duzy napis / 2 biala klasyczna).
 // PR: zloty wyglad + delikatne pulsowanie; text/day/place niosa wlasny tekst w ov.text
-export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex }: {
-  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'
+export function StickerContent({ type, variant = 0, time, gym, text, act, sportLabel, chipIndex, gifUrl }: {
+  type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'
   variant?: number
   time?: string | null
   gym?: string | null
@@ -172,7 +172,14 @@ export function StickerContent({ type, variant = 0, time, gym, text, act, sportL
   act?: ActivityData | null
   sportLabel?: string
   chipIndex?: number
+  gifUrl?: string | null
 }) {
+  // Naklejka GIF: sama animacja, bez tekstu ani ramki — tylko zaokraglone rogi
+  if (type === 'gif') {
+    if (!gifUrl) return null
+    return <Image source={{ uri: gifUrl }} style={s.gifSticker} resizeMode="cover" />
+  }
+
   // Naklejka aktywnosci: karta ze wszystkimi wierszami albo pojedynczy
   // odlaczony wiersz (chipIndex po rozsypaniu — patrz cycleOverlay)
   if (type === 'activity' && act) {
@@ -250,6 +257,7 @@ export function OverlayPillsView({ status }: { status: any }) {
             act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null}
             sportLabel={ov.text ?? undefined}
             chipIndex={ov.chip}
+            gifUrl={ov.gifUrl}
           />
         </View>
       ))}
@@ -308,5 +316,9 @@ const s = StyleSheet.create({
   actRowLabel: {
     fontSize: 10.5, fontWeight: '700', color: 'rgba(255,255,255,0.75)', letterSpacing: 0.8, marginTop: 2,
     textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 5,
+  },
+  gifSticker: {
+    width: 150, height: 150, borderRadius: 16,
+    shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6,
   },
 })

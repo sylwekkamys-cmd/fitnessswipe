@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator, Modal, Image, ImageBackground, Dimensions, KeyboardAvoidingView, Platform, PanResponder, Pressable } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, FlatList, Alert, ActivityIndicator, Modal, Image, ImageBackground, Dimensions, KeyboardAvoidingView, Platform, PanResponder, Pressable } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { File } from 'expo-file-system'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -31,7 +31,7 @@ const STATUS_PRESET_ICONS = [
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
 // id + chip = pojedynczy zeton po rozsypaniu (kazdy przeciagany osobno)
-type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number }
+type Overlay = { type: 'time' | 'gym' | 'place' | 'text' | 'day' | 'pr' | 'activity' | 'gif'; x: number; y: number; v?: number; text?: string; s?: number; sport?: string; m?: string; mu?: string; tm?: string; ex?: string; hr?: string; kcal?: string; id?: string; chip?: number; gifUrl?: string }
 
 // Przeciagalna naklejka (styl IG): pozycja znormalizowana 0..1 wzgledem obszaru medium.
 // Przeciaganie = zmiana pozycji, tapniecie = zmiana stylu (3 warianty), ✕ = usuniecie,
@@ -120,6 +120,7 @@ function StickerPill({ ov, time, gym, area, onChange, onCycle, onRemove, onScale
           act={ov.type === 'activity' && ov.sport && ov.m && ov.mu ? { sport: ov.sport, m: ov.m, mu: ov.mu, tm: ov.tm, ex: ov.ex, hr: ov.hr, kcal: ov.kcal } : null}
           sportLabel={ov.text ?? undefined}
           chipIndex={ov.chip}
+          gifUrl={ov.gifUrl}
         />
       </View>
       <TouchableOpacity style={stickerStyles.removeBtn} onPress={onRemove} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
@@ -212,6 +213,12 @@ export default function TrainingStatusScreen() {
   const [showViewers, setShowViewers] = useState(false)
   const [viewers, setViewers] = useState<any[]>([])
   const [viewersLoading, setViewersLoading] = useState(false)
+  // Naklejka GIF: ta sama wyszukiwarka (Giphy) co w czacie
+  const [showGifPicker, setShowGifPicker] = useState(false)
+  const [gifQuery, setGifQuery] = useState('')
+  const [gifResults, setGifResults] = useState<{ id: string; preview: string; url: string }[]>([])
+  const [gifLoading, setGifLoading] = useState(false)
+  const gifSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { loadStatus() }, [])
 
@@ -344,6 +351,30 @@ export default function TrainingStatusScreen() {
     if (!text) return
     setOverlays(prev => [...prev.filter(o => o.type !== 'pr'), { type: 'pr' as const, text, x: 0.24, y: 0.6, v: 0 }])
     setShowPrModal(false)
+  }
+
+  // Naklejka GIF: ta sama funkcja edge co w czacie (Giphy), z cache po stronie serwera
+  async function fetchGifs(q: string) {
+    setGifLoading(true)
+    try {
+      const { data } = await supabase.functions.invoke('gif-search', { body: { q, lang: i18n.language } })
+      setGifResults(data?.gifs ?? [])
+    } catch (e) { setGifResults([]) }
+    finally { setGifLoading(false) }
+  }
+  function openGifPicker() {
+    setShowGifPicker(true)
+    setGifQuery('')
+    fetchGifs('')
+  }
+  function handleGifQuery(v: string) {
+    setGifQuery(v)
+    if (gifSearchTimer.current) clearTimeout(gifSearchTimer.current)
+    gifSearchTimer.current = setTimeout(() => fetchGifs(v.trim()), 450)
+  }
+  function addGifOverlay(url: string) {
+    setOverlays(prev => [...prev.filter(o => o.type !== 'gif'), { type: 'gif' as const, gifUrl: url, x: 0.2, y: 0.35, v: 0 }])
+    setShowGifPicker(false)
   }
 
   // Naklejka aktywnosci: wybor sportu -> formularz z prefillowaniem z dzisiejszego
@@ -1142,7 +1173,7 @@ export default function TrainingStatusScreen() {
                 Bez medium ustawiaja tylko pola statusu; reszta to czyste naklejki, wiec wymaga medium. */}
             {toolOpen === 'stickers' && (
               <View style={[styles.toolPanel, { top: panelTop('stickers') }]}>
-                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr'] as const) : (['time', 'gym'] as const)).map(tp => {
+                {(hasMedia ? (['time', 'gym', 'place', 'text', 'day', 'pr', 'gif'] as const) : (['time', 'gym'] as const)).map(tp => {
                   const active = overlays.some(o => o.type === tp)
                   const label =
                     tp === 'time' ? t('trainingStatus.stickerTime')
@@ -1150,8 +1181,10 @@ export default function TrainingStatusScreen() {
                     : tp === 'place' ? t('trainingStatus.stickerPlace')
                     : tp === 'text' ? t('trainingStatus.stickerText')
                     : tp === 'day' ? t('trainingStatus.stickerDay')
-                    : t('trainingStatus.stickerPr')
+                    : tp === 'pr' ? t('trainingStatus.stickerPr')
+                    : t('trainingStatus.stickerGif')
                   const onPress = () => {
+                    if (tp === 'gif') { setToolOpen(null); openGifPicker(); return }
                     if (active) { toggleOverlay(tp); setToolOpen(null); return }
                     if (tp === 'time') { setToolOpen('time'); return }
                     if (tp === 'gym') { setToolOpen(null); openGymSearch(); return }
@@ -1514,6 +1547,47 @@ export default function TrainingStatusScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* Wybor GIF-a (Giphy) — ta sama funkcja edge co w czacie */}
+      <Modal visible={showGifPicker} transparent animationType="slide" onRequestClose={() => setShowGifPicker(false)}>
+        <View style={styles.sheetOverlay}>
+          <View style={[styles.sheet, { maxHeight: '75%' }]}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.gifSearchRow}>
+              <Ionicons name="search" size={16} color="rgba(255,255,255,0.4)" />
+              <TextInput
+                style={styles.gifSearchInput}
+                placeholder={t('chat.gifSearch')}
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                value={gifQuery}
+                onChangeText={handleGifQuery}
+              />
+              <TouchableOpacity onPress={() => setShowGifPicker(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close" size={20} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
+            </View>
+            {gifLoading ? (
+              <ActivityIndicator color={PRIMARY} style={{ marginVertical: 30 }} />
+            ) : (
+              <FlatList
+                data={gifResults}
+                keyExtractor={g => g.id}
+                numColumns={2}
+                keyboardShouldPersistTaps="handled"
+                columnWrapperStyle={{ gap: 8 }}
+                contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+                ListEmptyComponent={<Text style={styles.searchEmpty}>{t('chat.searchNoResults')}</Text>}
+                renderItem={({ item: gif }) => (
+                  <TouchableOpacity style={styles.gifTile} onPress={() => addGifOverlay(gif.url)} activeOpacity={0.8}>
+                    <Image source={{ uri: gif.preview }} style={styles.gifTileImg} />
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+            <Text style={styles.gifAttribution}>Powered by GIPHY</Text>
+          </View>
+        </View>
+      </Modal>
+
       {/* Modal rekordu (PR) — zlota pulsujaca naklejka */}
       <Modal visible={showPrModal} transparent animationType="slide" onRequestClose={() => setShowPrModal(false)}>
         <KeyboardAvoidingView style={styles.sheetOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -1700,6 +1774,12 @@ const styles = StyleSheet.create({
   actInputBox: { flex: 1, backgroundColor: BG, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
   actInputLabel: { fontSize: 10.5, color: 'rgba(255,255,255,0.45)', marginBottom: 2 },
   actInput: { fontSize: 18, fontWeight: '800', color: '#fff', padding: 0 },
+  gifSearchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, paddingHorizontal: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  gifSearchInput: { flex: 1, paddingVertical: 9, fontSize: 14, color: '#fff' },
+  gifTile: { flex: 1, aspectRatio: 1.35, borderRadius: 10, overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.25)' },
+  gifTileImg: { width: '100%', height: '100%' },
+  gifAttribution: { fontSize: 10.5, color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 10 },
+  searchEmpty: { fontSize: 13, color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingVertical: 16 },
   placeAddBtn: { backgroundColor: LIME, borderRadius: 14, paddingVertical: 13, alignItems: 'center', marginTop: 14 },
   placeAddBtnText: { color: BG, fontSize: 15, fontWeight: '800' },
   placeList: { marginTop: 10, maxHeight: 220 },
