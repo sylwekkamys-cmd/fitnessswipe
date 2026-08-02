@@ -28,7 +28,7 @@
 </nav>
 <div class="container">
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: July 22, 2026</p>
+  <p class="updated">Last updated: August 2, 2026</p>
 
   <div style="background:#1a2a44;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 18px;margin-bottom:24px;">
     <p style="margin-bottom:6px;"><strong>The English version of this document is the legally binding version.</strong></p>
@@ -53,11 +53,14 @@
     <li><strong>Profile data:</strong> name, age, gender, country, city, bio, profile photos</li>
     <li><strong>Fitness data:</strong> training goals, fitness level, experience, preferred exercises, training schedule</li>
     <li><strong>Workout history:</strong> workout dates, types, duration, ratings, notes, and training partners</li>
-    <li><strong>Health data (optional):</strong> daily step count from Health Connect (Android) or Apple Health (iOS) — only if you grant permission (see section 9)</li>
-    <li><strong>Location data:</strong> approximate GPS coordinates (used to find nearby partners)</li>
-    <li><strong>Usage data:</strong> swipes, matches, messages, profile views, app activity</li>
+    <li><strong>Health data (optional):</strong> step count, exercise sessions and workout distance from Health Connect (Android) or Apple Health (iOS) — only if you grant permission (see section 9)</li>
+    <li><strong>Body measurements (optional):</strong> body circumferences, weight, measurement goals and private progress photos you choose to record (see section 10)</li>
+    <li><strong>Location data:</strong> approximate GPS coordinates (used to find nearby partners), and precise locations you explicitly choose to share in a chat message</li>
+    <li><strong>Content you create:</strong> chat messages, photos, voice messages, GIF selections, 24-hour workout stories (photos/videos with stickers), reactions and comments</li>
+    <li><strong>Usage data:</strong> swipes, matches, messages, profile views, story views, app activity</li>
     <li><strong>Verification data:</strong> verification photo (stored securely, not public)</li>
     <li><strong>Device data:</strong> push notification token, device type</li>
+    <li><strong>Diagnostic data:</strong> crash reports and error logs (device model, OS version, app version, technical error details — see section 4)</li>
   </ul>
 
   <h2>3. How We Use Your Data</h2>
@@ -80,6 +83,8 @@
     <li><strong>Expo</strong> (expo.dev) — for push notifications delivery.</li>
     <li><strong>GIPHY</strong> (giphy.com) — for GIF search in chat. Only your search query is sent (never linked to your identity by us); GIF images are loaded from GIPHY's servers.</li>
     <li><strong>Google Maps / Apple Maps</strong> — for map previews when you choose to share a location in chat.</li>
+    <li><strong>Sentry</strong> (sentry.io, Functional Software Inc.) — for crash reporting and error diagnostics, so we can find and fix technical problems. Crash reports contain technical data only (device model, OS and app version, error details); data is processed in Sentry's EU region. Health data, body measurements, messages and photos are never included in crash reports.</li>
+    <li><strong>Resend</strong> (resend.com) — for delivering transactional emails (account emails, data exports, notifications) from our domain.</li>
     <li><strong>Apple / Google</strong> — for app distribution via App Store and Google Play.</li>
   </ul>
   <p>All third-party processors are bound by data processing agreements and comply with GDPR.</p>
@@ -100,6 +105,7 @@
     <li>Your location data is deleted immediately</li>
     <li>Anonymized usage statistics may be retained for analytics</li>
   </ul>
+  <p>In addition, regardless of account deletion: 24-hour workout stories (photos/videos) are automatically and permanently deleted from our servers shortly after they expire, and crash reports are retained by our error-reporting provider for a limited period (currently 30 days) before automatic deletion.</p>
 
   <h2>7. Your Rights Under GDPR</h2>
   <p>As a data subject, you have the following rights:</p>
@@ -125,36 +131,48 @@
   </ul>
 
   <h2>9. Health &amp; Fitness Data (Health Connect / Apple Health)</h2>
-  <p>FitnessSwipe can optionally connect to <strong>Health Connect</strong> (Android) or <strong>Apple Health</strong> (iOS) to read your daily step count. This is entirely optional — the app is fully functional without it.</p>
+  <p>FitnessSwipe can optionally connect to <strong>Health Connect</strong> (Android) or <strong>Apple Health</strong> (iOS). This is entirely optional — the app is fully functional without it.</p>
   <ul>
-    <li><strong>What we access:</strong> step count only. We do not read any other health data types.</li>
-    <li><strong>Why:</strong> solely to track your progress in step-based challenges and 1-on-1 duels that you voluntarily join.</li>
-    <li><strong>What is stored:</strong> aggregated step totals for the duration of a challenge or duel (not raw sensor data, not continuous history).</li>
-    <li><strong>Who can see it:</strong> your step totals are visible only as scores within challenges and duels you participate in (e.g. your duel opponent sees your score). They are never shown on your public profile.</li>
+    <li><strong>What we access:</strong> step count, exercise sessions (activity type and duration) and workout distance. We do not read any other health data types.</li>
+    <li><strong>Why:</strong> solely to power features you actively use:
+      (a) step-based challenges and 1-on-1 duels that you voluntarily join;
+      (b) pre-filling an activity sticker (e.g. distance and duration of today's run) on a workout story you choose to publish;
+      (c) an optional daily step counter on your own profile — <strong>off by default</strong>, shown to others only after you enable it with an explicit toggle in settings.</li>
+    <li><strong>What is stored:</strong> aggregated totals only (e.g. step totals for a challenge, today's step count, the distance you placed on a sticker) — not raw sensor data, not continuous history.</li>
+    <li><strong>Who can see it:</strong> challenge/duel scores are visible to participants of that challenge or duel; an activity sticker is visible to people who can see the story you published it on; your daily step count is visible on your profile only if you enabled the toggle. Nothing is shared without an action you take.</li>
     <li><strong>Limited use:</strong> health data is never used for advertising, marketing, or profiling, is never sold, and is never shared with third parties. Our use complies with Google Play's Health Connect permissions policy and Limited Use requirements.</li>
-    <li><strong>Your control:</strong> you can revoke access at any time in the Health Connect app (Android) or Health app (iOS) settings, or disconnect in FitnessSwipe. Stored step totals are deleted when you delete your account.</li>
+    <li><strong>Your control:</strong> you can revoke access at any time in the Health Connect app (Android) or Health app (iOS) settings, or disconnect in FitnessSwipe. Stored totals are deleted when you delete your account.</li>
   </ul>
 
-  <h2>10. Photos and Verification</h2>
+  <h2>10. Body Measurements &amp; Progress Photos</h2>
+  <p>FitnessSwipe includes an optional body tracking feature where you can record body circumferences, weight, measurement goals and progress photos.</p>
+  <ul>
+    <li><strong>Private by default:</strong> your measurements, goals and progress photos are visible only to you. Progress photos are stored in private storage and are accessible only through short-lived signed links generated for your account.</li>
+    <li><strong>Sharing with a trainer (optional):</strong> you can grant a specific trainer you chat with read-only access to your numeric measurements and goals. This requires your explicit action (a per-trainer toggle), and you can revoke it at any time. <strong>Progress photos are never shared with anyone</strong> — not even trainers.</li>
+    <li><strong>Deletion:</strong> you can delete individual photos and measurements in the app at any time; everything is permanently deleted when you delete your account.</li>
+    <li>Body measurement data is never used for advertising or profiling and is never sold.</li>
+  </ul>
+
+  <h2>11. Photos and Verification</h2>
   <p>Profile photos are stored securely and displayed to other users as part of your profile. Verification photos are stored separately and are never visible to other users — they are used only for identity verification purposes.</p>
   <p>AI-powered verification is processed by OpenAI. The verification photo is sent to OpenAI's API solely for verification and is not used for training AI models (we use the API with data opt-out enabled).</p>
 
-  <h2>11. Children's Privacy</h2>
+  <h2>12. Children's Privacy</h2>
   <p>FitnessSwipe is not intended for users under 18 years of age. We do not knowingly collect data from minors. If you believe a minor has created an account, please contact us immediately at <a href="mailto:support.fitnessswipe@gmail.com">support.fitnessswipe@gmail.com</a>.</p>
 
-  <h2>12. Cookies</h2>
+  <h2>13. Cookies</h2>
   <p>The FitnessSwipe mobile app does not use cookies. Our website (fitnessswipe.app) may use essential cookies for functionality only.</p>
 
-  <h2>13. Changes to This Policy</h2>
+  <h2>14. Changes to This Policy</h2>
   <p>We may update this Privacy Policy from time to time. We will notify you of significant changes via the app or email. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
 
-  <h2>14. Complaints</h2>
+  <h2>15. Complaints</h2>
   <p>If you believe we have not handled your data correctly, you have the right to lodge a complaint with your national data protection authority. In the Netherlands: <a href="https://autoriteitpersoonsgegevens.nl" target="_blank">Autoriteit Persoonsgegevens</a>. In Poland: <a href="https://uodo.gov.pl" target="_blank">UODO</a>.</p>
 
-  <h2>15. Originality Statement</h2>
+  <h2>16. Originality Statement</h2>
   <p>FitnessSwipe was developed independently and does not copy or reproduce any other application or platform. Any similarity to other services is purely coincidental. The personal data collected by FitnessSwipe is processed solely for the purposes described in this Privacy Policy and is not shared with or derived from any other application.</p>
 
-  <h2>16. Contact</h2>
+  <h2>17. Contact</h2>
   <p>For any privacy-related questions or to exercise your rights:<br>
   Email: <a href="mailto:support.fitnessswipe@gmail.com">support.fitnessswipe@gmail.com</a><br>
   We aim to respond within 5 business days.</p>
