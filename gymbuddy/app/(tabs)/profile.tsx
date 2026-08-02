@@ -535,6 +535,25 @@ export default function ProfileScreen() {
 
         <Text style={styles.editLabel}>{t('profile.name')}</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('profile.namePlaceholder')} placeholderTextColor="rgba(255,255,255,0.3)" />
+
+        <Text style={styles.editLabel}>{t('profile.preferredLanguage') || 'Preferred communication language'}</Text>
+        <View style={styles.tagsGrid}>
+          {[
+            { code: 'pl', label: 'Polski' },
+            { code: 'en', label: 'English' },
+            { code: 'de', label: 'Deutsch' },
+            { code: 'fr', label: 'Français' },
+            { code: 'es', label: 'Español' },
+            { code: 'nl', label: 'Nederlands' },
+            { code: 'bg', label: 'Български' },
+            { code: 'ro', label: 'Română' },
+            { code: 'tr', label: 'Türkçe' },
+          ].map(o => (
+            <TouchableOpacity key={o.code} style={[styles.tagSelect, preferredLanguage === o.code && styles.tagSelectActive]} onPress={() => setPreferredLanguage(o.code)}>
+              <Text style={[styles.tagSelectText, preferredLanguage === o.code && styles.tagSelectTextActive]}>{o.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         </EditSection>
 
         {/* ===== LOKALIZACJA I BIO ===== */}
@@ -623,25 +642,6 @@ export default function ProfileScreen() {
         {experienceYears === 0 && experienceMonths === 0 && (
           <Text style={styles.expBeginner}>{t('gym.beginner') || 'Just starting out'} 💪</Text>
         )}
-
-        <Text style={styles.editLabel}>{t('profile.preferredLanguage') || 'Preferred communication language'}</Text>
-        <View style={styles.tagsGrid}>
-          {[
-            { code: 'pl', label: 'Polski' },
-            { code: 'en', label: 'English' },
-            { code: 'de', label: 'Deutsch' },
-            { code: 'fr', label: 'Français' },
-            { code: 'es', label: 'Español' },
-            { code: 'nl', label: 'Nederlands' },
-            { code: 'bg', label: 'Български' },
-            { code: 'ro', label: 'Română' },
-            { code: 'tr', label: 'Türkçe' },
-          ].map(o => (
-            <TouchableOpacity key={o.code} style={[styles.tagSelect, preferredLanguage === o.code && styles.tagSelectActive]} onPress={() => setPreferredLanguage(o.code)}>
-              <Text style={[styles.tagSelectText, preferredLanguage === o.code && styles.tagSelectTextActive]}>{o.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
 
         <Text style={styles.editLabel}>{t('gym.fitnessLevel')}</Text>
         <View style={styles.tagsGrid}>
