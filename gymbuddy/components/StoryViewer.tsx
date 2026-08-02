@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { supabase, incrementStatusView, reportUser } from '../lib/supabase'
+import { supabase, incrementStatusView, reportUser, getStatusViewers } from '../lib/supabase'
 import { OverlayPillsView, FilterLayer } from './statusMedia'
 
 const PRIMARY = '#7dc52e'
@@ -56,7 +56,7 @@ function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolea
 }
 
 // Pelnoekranowa przegladarka relacji (wspolna: pasek w Dopasowaniach, mapa silowni)
-export default function StoryViewer({ visible, people, initialIndex, onClose, myProfile, onShare, onShowViewers }: {
+export default function StoryViewer({ visible, people, initialIndex, onClose, myProfile, onShare }: {
   visible: boolean
   people: any[]
   initialIndex: number
@@ -64,8 +64,6 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
   myProfile: any
   // Udostepnianie na inne aplikacje — tylko dla WLASNYCH relacji (przycisk u gory)
   onShare?: (story: any) => void
-  // Lista widzow/reakcji — tylko dla WLASNYCH relacji (przycisk z oczkiem na dole)
-  onShowViewers?: () => void
 }) {
   const { t } = useTranslation()
   const [index, setIndex] = useState(initialIndex)
@@ -77,7 +75,30 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
   const [replyText, setReplyText] = useState('')
   const [sendingReply, setSendingReply] = useState(false)
   const [replySent, setReplySent] = useState(false)
+  // Lista widzow wlasnej relacji: arkusz otwierany NA MIEJSCU (bez wychodzenia z podgladu)
+  const [viewersOpen, setViewersOpen] = useState(false)
+  const [viewersList, setViewersList] = useState<any[]>([])
+  const [viewersLoading, setViewersLoading] = useState(false)
   const touchStart = useRef({ x: 0, y: 0 })
+
+  async function openViewersSheet() {
+    if (!myProfile) return
+    setViewersOpen(true)
+    setViewersLoading(true)
+    try { setViewersList(await getStatusViewers(myProfile.id)) } catch (e) { }
+    finally { setViewersLoading(false) }
+  }
+
+  function viewedAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) return `${Math.max(mins, 1)} min`
+    if (mins < 60 * 24) return `${Math.floor(mins / 60)} h`
+    return `${Math.floor(mins / (60 * 24))} d`
+  }
+
+  // Zamkniecie podgladu / zmiana slajdu chowa arkusz widzow
+  useEffect(() => { setViewersOpen(false) }, [visible, index])
 
   // Mapa autor -> id matcha (odpowiadac mozna tylko dopasowanym; czaty trenerskie odpadaja)
   useEffect(() => {
@@ -290,8 +311,8 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
               ) : null}
             </View>
             {/* Wlasna relacja: przycisk listy widzow (jak na Instagramie) */}
-            {isOwn && onShowViewers && (
-              <TouchableOpacity style={styles.viewersBtn} onPress={onShowViewers}>
+            {isOwn && (
+              <TouchableOpacity style={styles.viewersBtn} onPress={openViewersSheet}>
                 <Ionicons name="eye-outline" size={16} color="#fff" />
                 <Text style={styles.viewersBtnText}>
                   {person.view_count ?? 0} · {t('trainingStatus.seeViewers')}
@@ -354,6 +375,49 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
             )}
           </View>
         ) : null}
+
+        {/* Arkusz widzow i reakcji — nakladka wewnatrz podgladu (bez drugiego Modala) */}
+        {viewersOpen && (
+          <View style={styles.viewersOverlay}>
+            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setViewersOpen(false)} />
+            <View style={styles.viewersSheet}>
+              <View style={styles.viewersHandle} />
+              <Text style={styles.viewersTitle}>👁️ {t('trainingStatus.viewersTitle')}</Text>
+              {viewersLoading ? (
+                <ActivityIndicator color={PRIMARY} style={{ marginVertical: 24 }} />
+              ) : (
+                <ScrollView style={{ maxHeight: 320 }}>
+                  {viewersList.map((v: any) => (
+                    <TouchableOpacity
+                      key={v.viewer_id}
+                      style={styles.viewerRow}
+                      onPress={() => { setViewersOpen(false); onClose(); router.push({ pathname: '/profile/profile-detail', params: { profileId: v.viewer_id } } as any) }}
+                    >
+                      {v.profiles?.photo_urls?.[0] ? (
+                        <Image source={{ uri: v.profiles.photo_urls[0] }} style={styles.viewerAvatar} />
+                      ) : (
+                        <View style={[styles.viewerAvatar, { backgroundColor: '#2e415c', alignItems: 'center', justifyContent: 'center' }]}>
+                          <Ionicons name="person" size={15} color="rgba(255,255,255,0.35)" />
+                        </View>
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.viewerName}>{v.profiles?.name ?? '...'}</Text>
+                        <Text style={styles.viewerTime}>{viewedAgo(v.viewed_at)}</Text>
+                      </View>
+                      {v.emoji ? <Text style={{ fontSize: 19 }}>{v.emoji}</Text> : null}
+                    </TouchableOpacity>
+                  ))}
+                  {viewersList.length === 0 && (
+                    <Text style={styles.viewersEmpty}>{t('trainingStatus.viewersEmpty')}</Text>
+                  )}
+                </ScrollView>
+              )}
+              <TouchableOpacity style={styles.viewersClose} onPress={() => setViewersOpen(false)}>
+                <Text style={styles.viewersCloseText}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </Modal>
   )
@@ -382,6 +446,17 @@ const styles = StyleSheet.create({
   partnerChipText: { fontSize: 11, fontWeight: '700', color: '#0d1b2e' },
   viewersBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 18, paddingHorizontal: 13, paddingVertical: 8, marginTop: 12 },
   viewersBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  viewersOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 30, justifyContent: 'flex-end' },
+  viewersSheet: { backgroundColor: '#1a2a44', borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, paddingBottom: 34 },
+  viewersHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'center', marginBottom: 12 },
+  viewersTitle: { fontSize: 16, fontWeight: '800', color: '#fff', textAlign: 'center', marginBottom: 10 },
+  viewerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
+  viewerAvatar: { width: 38, height: 38, borderRadius: 19 },
+  viewerName: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  viewerTime: { fontSize: 11.5, color: 'rgba(255,255,255,0.45)', marginTop: 1 },
+  viewersEmpty: { fontSize: 13, color: 'rgba(255,255,255,0.45)', textAlign: 'center', paddingVertical: 18 },
+  viewersClose: { alignItems: 'center', paddingVertical: 10, marginTop: 4 },
+  viewersCloseText: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
   replyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
   replyInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 22, paddingHorizontal: 15, paddingVertical: 9, fontSize: 14, color: '#fff' },
   replySendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center' },

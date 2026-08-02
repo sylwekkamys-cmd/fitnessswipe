@@ -326,7 +326,6 @@ export default function MatchesScreen() {
           if (myProfileId) getMyViewedStatusIds(myProfileId).then(setViewedIds).catch(() => { })
         }}
         myProfile={myProfileFull}
-        onShowViewers={() => { setStoryIndex(null); router.push('/training-status' as any) }}
       />
     </ScrollView>
   )

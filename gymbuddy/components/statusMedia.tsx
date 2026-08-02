@@ -82,21 +82,21 @@ function SingleLayer({ id }: { id: string }) {
         </View>
       )
     case 'frame':
-      // Podwojna biala rama + cien konturowy: czytelna i na jasnych, i na ciemnych zdjeciach
+      // Biale passe-partout: rama DOMYKA obraz (matowy margines zakrywa brzegi
+      // zdjecia jak w ramce na sciane), do tego cienka linia definiujaca okno
       return (
         <View style={s.fill} pointerEvents="none">
-          <View style={s.frameShadow} />
-          <View style={[s.frameOuter, { borderColor: 'rgba(255,255,255,0.95)' }]} />
-          <View style={[s.frameInner, { borderColor: 'rgba(255,255,255,0.55)' }]} />
+          <View style={[s.matte, { borderColor: '#f5f2ea' }]} />
+          <View style={[s.matteLine, { borderColor: 'rgba(0,0,0,0.22)' }]} />
         </View>
       )
     case 'framegold':
-      // Zlota rama galeryjna: gruba zlota linia + cienka wewnetrzna + kontur
+      // Zlota rama galeryjna: czarny mat zamyka zdjecie + zlota linia glowna i cienka wewnetrzna
       return (
         <View style={s.fill} pointerEvents="none">
-          <View style={s.frameShadow} />
-          <View style={[s.frameOuter, { borderColor: '#f0b429', borderWidth: 2.5 }]} />
-          <View style={[s.frameInner, { borderColor: 'rgba(240,180,41,0.65)' }]} />
+          <View style={[s.matte, { borderColor: '#101820' }]} />
+          <View style={[s.matteGoldOuter, { borderColor: '#f0b429' }]} />
+          <View style={[s.matteLine, { borderColor: 'rgba(240,180,41,0.75)' }]} />
         </View>
       )
     default:
@@ -255,10 +255,11 @@ const s = StyleSheet.create({
   vignetteOuter: { ...StyleSheet.absoluteFillObject, borderWidth: 70, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 120 },
   vignetteInner: { ...StyleSheet.absoluteFillObject, borderWidth: 34, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 80 },
   frame: { position: 'absolute', top: 14, left: 14, right: 14, bottom: 14, borderWidth: 3, borderRadius: 22, zIndex: 2 },
-  // Nowe ramki: kontur (widocznosc na jasnym tle) + linia glowna + cienka wewnetrzna
-  frameShadow: { position: 'absolute', top: 11, left: 11, right: 11, bottom: 11, borderWidth: 4, borderRadius: 25, borderColor: 'rgba(0,0,0,0.28)', zIndex: 2 },
-  frameOuter: { position: 'absolute', top: 12, left: 12, right: 12, bottom: 12, borderWidth: 2, borderRadius: 24, zIndex: 2 },
-  frameInner: { position: 'absolute', top: 19, left: 19, right: 19, bottom: 19, borderWidth: 1, borderRadius: 17, zIndex: 2 },
+  // Passe-partout: gruby borderWidth dziala jak mat zakrywajacy brzegi zdjecia —
+  // obraz konczy sie wewnatrz ramy, nic nie wystaje poza nia
+  matte: { ...StyleSheet.absoluteFillObject, borderWidth: 18, zIndex: 2 },
+  matteLine: { position: 'absolute', top: 18, left: 18, right: 18, bottom: 18, borderWidth: 1.5, zIndex: 2 },
+  matteGoldOuter: { position: 'absolute', top: 8, left: 8, right: 8, bottom: 8, borderWidth: 2.5, zIndex: 2 },
   bigText: {
     fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 0.5,
     textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,

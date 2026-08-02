@@ -876,7 +876,6 @@ export default function TrainingStatusScreen() {
         onClose={() => setPreviewIndex(null)}
         myProfile={myProfileObj}
         onShare={(story) => { setPreviewIndex(null); setTimeout(() => shareStoryExternal(story), 350) }}
-        onShowViewers={() => { setPreviewIndex(null); setTimeout(openViewers, 350) }}
       />
 
       {/* Kompozycja zdjecia do udostepnienia na inne sociale (media+filtr+naklejki+branding) */}
