@@ -1292,48 +1292,55 @@ export default function TrainingStatusScreen() {
         )
       })()}
 
+      {/* UWAGA: KeyboardAvoidingView w trybie "padding" (iOS) sam nadpisuje
+          paddingBottom swojego stylu na 0 (StyleSheet.compose w jego kodzie
+          zrodlowym) gdy klawiatura jest zamknieta — dlatego wlasciwy odstep
+          od dolu musi siedziec na WEWNETRZNYM, zwyklym View, nie na stylu
+          samego KeyboardAvoidingView (tam i tak zostanie skasowany) */}
       <KeyboardAvoidingView
-        style={[styles.bottomWrap, { paddingBottom: 90 + insets.bottom }]}
+        style={styles.bottomWrap}
         pointerEvents="box-none"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
-        {/* Ustawiony tekst / godzina / silownia — male pigulki informacyjne (edycja przez kolumne narzedzi) */}
-        {(!!statusText.trim() || !!trainingTime || !!gymName) && (
-          <View style={styles.metaChipsRow}>
-            {!!statusText.trim() && (
-              <TouchableOpacity style={styles.metaChip} onPress={() => { setStatusText(''); setSelectedPreset(null) }}>
-                <Ionicons name="chatbubble-ellipses-outline" size={12} color={LIME} />
-                <Text style={styles.metaChipText} numberOfLines={1}>{statusText.trim()}</Text>
-                <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
-              </TouchableOpacity>
-            )}
-            {!!trainingTime && (
-              <TouchableOpacity style={styles.metaChip} onPress={() => { setTrainingTime(''); setOverlays(prev => prev.filter(o => o.type !== 'time')) }}>
-                <Ionicons name="time-outline" size={12} color={LIME} />
-                <Text style={styles.metaChipText}>{trainingTime}</Text>
-                <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
-              </TouchableOpacity>
-            )}
-            {!!gymName && (
-              <TouchableOpacity style={styles.metaChip} onPress={() => { setGymName(''); setOverlays(prev => prev.filter(o => o.type !== 'gym')) }}>
-                <Ionicons name="barbell-outline" size={12} color={LIME} />
-                <Text style={styles.metaChipText} numberOfLines={1}>{gymName}</Text>
-                <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        {/* Udostepnij */}
-        <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
-          {saving ? <ActivityIndicator color={BG} /> : (
-            <>
-              <Ionicons name="flash" size={18} color={BG} />
-              <Text style={styles.saveBtnText}>{t('trainingStatus.shareBtn') || 'Udostępnij na 24h'}</Text>
-            </>
+        <View style={{ paddingBottom: 90 + insets.bottom }}>
+          {/* Ustawiony tekst / godzina / silownia — male pigulki informacyjne (edycja przez kolumne narzedzi) */}
+          {(!!statusText.trim() || !!trainingTime || !!gymName) && (
+            <View style={styles.metaChipsRow}>
+              {!!statusText.trim() && (
+                <TouchableOpacity style={styles.metaChip} onPress={() => { setStatusText(''); setSelectedPreset(null) }}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={12} color={LIME} />
+                  <Text style={styles.metaChipText} numberOfLines={1}>{statusText.trim()}</Text>
+                  <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+              )}
+              {!!trainingTime && (
+                <TouchableOpacity style={styles.metaChip} onPress={() => { setTrainingTime(''); setOverlays(prev => prev.filter(o => o.type !== 'time')) }}>
+                  <Ionicons name="time-outline" size={12} color={LIME} />
+                  <Text style={styles.metaChipText}>{trainingTime}</Text>
+                  <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+              )}
+              {!!gymName && (
+                <TouchableOpacity style={styles.metaChip} onPress={() => { setGymName(''); setOverlays(prev => prev.filter(o => o.type !== 'gym')) }}>
+                  <Ionicons name="barbell-outline" size={12} color={LIME} />
+                  <Text style={styles.metaChipText} numberOfLines={1}>{gymName}</Text>
+                  <Ionicons name="close" size={11} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
-        </TouchableOpacity>
+
+          {/* Udostepnij */}
+          <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
+            {saving ? <ActivityIndicator color={BG} /> : (
+              <>
+                <Ionicons name="flash" size={18} color={BG} />
+                <Text style={styles.saveBtnText}>{t('trainingStatus.shareBtn') || 'Udostępnij na 24h'}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
 
       {/* Modal wyszukiwarki silowni */}
@@ -1795,7 +1802,9 @@ const styles = StyleSheet.create({
   statPillText: { fontSize: 11, color: '#fff', fontWeight: '600' },
   // zIndex wyzszy niz warstwy filtrow/efektow (2) — zaden efekt (kino, polaroid,
   // cien u dolu...) nie moze zakryc przycisku udostepnienia
-  bottomWrap: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 30, zIndex: 8 },
+  // paddingBottom NIE tu — KeyboardAvoidingView(behavior="padding") i tak go
+  // nadpisuje na 0 gdy klawiatura zamknieta; realny odstep jest na wewnetrznym View
+  bottomWrap: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: 16, zIndex: 8 },
   metaChipsRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   metaChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', maxWidth: '70%' },
   metaChipText: { fontSize: 12, color: '#fff', fontWeight: '700', flexShrink: 1 },
