@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator, Modal, Image, Dimensions, KeyboardAvoidingView, Platform, PanResponder, Pressable } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator, Modal, Image, ImageBackground, Dimensions, KeyboardAvoidingView, Platform, PanResponder, Pressable } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { File } from 'expo-file-system'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -26,8 +26,7 @@ const MAX_VIDEO_SECONDS = 16
 const MAX_VIDEO_BYTES = 20 * 1024 * 1024
 
 const STATUS_PRESET_ICONS = [
-  'barbell-outline', 'people-outline', 'flame-outline', 'body-outline',
-  'pulse-outline', 'flash-outline', 'hand-right-outline', 'bicycle-outline'
+  'flame-outline', 'body-outline', 'pulse-outline', 'flash-outline', 'hand-right-outline', 'bicycle-outline'
 ]
 
 // activity: naklejka statystyk treningu (sport, m/mu = duza wartosc+jednostka, tm czas, ex tempo/kcal);
@@ -803,8 +802,18 @@ export default function TrainingStatusScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {myStories.map((story, idx) => (
-          <View key={story.id} style={styles.ovCard}>
+        {myStories.map((story, idx) => {
+          // Tlo karty: zdjecie relacji, a przy wideo/samym tekscie — wlasne zdjecie profilowe
+          const bgUri = story.status_photo_url || myProfileObj?.photo_urls?.[0]
+          return (
+          <ImageBackground
+            key={story.id}
+            source={bgUri ? { uri: bgUri } : undefined}
+            style={styles.ovCard}
+            imageStyle={styles.ovCardBgImage}
+            blurRadius={story.video_url ? 14 : 3}
+          >
+            <View style={styles.ovCardScrim} pointerEvents="none" />
             {/* Tap w miniature/tresc = pelnoekranowy podglad relacji */}
             <TouchableOpacity
               style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
@@ -843,8 +852,9 @@ export default function TrainingStatusScreen() {
                 <Ionicons name="trash-outline" size={18} color="#ff6b6b" />
               </TouchableOpacity>
             </View>
-          </View>
-        ))}
+          </ImageBackground>
+          )
+        })}
 
         {Object.keys(reactions).length > 0 && (
           <View style={styles.ovReactionsRow}>
@@ -1598,7 +1608,9 @@ const styles = StyleSheet.create({
   timeLeftText: { fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
   statsRow: { flexDirection: 'row', gap: 6 },
   statPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
-  ovCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: BG_LIGHT, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(148,227,54,0.22)' },
+  ovCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: BG_LIGHT, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(148,227,54,0.22)', overflow: 'hidden' },
+  ovCardBgImage: { borderRadius: 18 },
+  ovCardScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,27,46,0.62)' },
   ovThumbWrap: { position: 'relative' },
   ovThumb: { width: 64, height: 84, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.3)' },
   ovThumbVideo: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#24405f' },

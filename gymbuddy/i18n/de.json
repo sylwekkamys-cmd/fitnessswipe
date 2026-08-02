@@ -290,7 +290,8 @@
     "viewProfile": "Profil ansehen",
     "duelTile": "Duell",
     "storyReplyPlaceholder": "Auf Story antworten…",
-    "storyReplyTag": "Antwort auf Story"
+    "storyReplyTag": "Antwort auf Story",
+    "locationExpired": "Standort abgelaufen"
   },
   "matches": {
     "sayHi": "Neues Match — sag Hallo! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Text zur Story hinzufügen",
     "clear": "Löschen",
     "selectTimeTitle": "Uhrzeit wählen",
-    "preset1": "Training!",
-    "preset2": "Suche einen Partner",
-    "preset3": "Intensives Training",
-    "preset4": "Yoga / Stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boxen",
-    "preset8": "Radfahren",
     "profileButton": "Story",
     "imAtGym": "Ich bin jetzt im Fitnessstudio",
     "liveNow": "Du bist live!",
@@ -724,7 +717,13 @@
     "noEditHint": "Eine veröffentlichte Story lässt sich nicht bearbeiten — du kannst sie löschen oder weiterteilen.",
     "shareExternal": "In anderen Apps teilen",
     "reactionPush": "hat auf deine Story reagiert",
-    "seeViewers": "Sehen, wer es gesehen hat"
+    "seeViewers": "Sehen, wer es gesehen hat",
+    "preset1": "Intensives Training",
+    "preset2": "Yoga / Stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boxen",
+    "preset6": "Radfahren"
   },
   "reportBlock": {
     "report": "Nutzer melden",
@@ -853,7 +852,9 @@
     "radiusLabel": "Sichtbar innerhalb von (km)",
     "radiusHint": "Max. 200 km. Nur Nutzer in der Nähe sehen diese Herausforderung.",
     "searchPlaceholder": "Herausforderungen suchen...",
-    "maxDistance": "Max. Entfernung"
+    "maxDistance": "Max. Entfernung",
+    "stepsAutoSynced": "Schritte werden automatisch von deiner Uhr/deinem Handy synchronisiert.",
+    "enterManually": "Manuell eingeben"
   },
   "liveMap": {
     "seeStories": "Stories ansehen",
@@ -1299,7 +1300,8 @@
     "weeksShort": "Wo.",
     "bannerTitle": "Gemeinsame Serie: {{count}} Wo.",
     "extendHint": "Loggt bis Sonntag ein gemeinsames Training, um zu verlängern",
-    "weekDone": "Diese Woche ist drin ✅"
+    "weekDone": "Diese Woche ist drin ✅",
+    "noHistory": "Noch keine gemeinsamen Trainings protokolliert."
   },
   "traveler": {
     "toggle": "Nur auf der Durchreise",

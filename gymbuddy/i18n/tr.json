@@ -290,7 +290,8 @@
     "viewProfile": "Profili gör",
     "duelTile": "Düello",
     "storyReplyPlaceholder": "Hikayeye yanıt ver…",
-    "storyReplyTag": "Hikayeye yanıt"
+    "storyReplyTag": "Hikayeye yanıt",
+    "locationExpired": "Konum süresi doldu"
   },
   "matches": {
     "sayHi": "Yeni eşleşme — selam ver! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Hikayeye bir açıklama ekle",
     "clear": "Temizle",
     "selectTimeTitle": "Saat seç",
-    "preset1": "Antrenmandayım!",
-    "preset2": "Partner arıyorum",
-    "preset3": "Yoğun antrenman",
-    "preset4": "Yoga / esneme",
-    "preset5": "Kardiyo",
-    "preset6": "CrossFit",
-    "preset7": "Boks",
-    "preset8": "Bisiklet",
     "profileButton": "Hikaye",
     "imAtGym": "Şu an salondayım",
     "liveNow": "Canlıdasın!",
@@ -724,7 +717,13 @@
     "noEditHint": "Yayınlanan hikaye düzenlenemez — silebilir veya başka yerde paylaşabilirsin.",
     "shareExternal": "Diğer uygulamalarda paylaş",
     "reactionPush": "hikayene tepki verdi",
-    "seeViewers": "Kimler izledi gör"
+    "seeViewers": "Kimler izledi gör",
+    "preset1": "Yoğun antrenman",
+    "preset2": "Yoga / esneme",
+    "preset3": "Kardiyo",
+    "preset4": "CrossFit",
+    "preset5": "Boks",
+    "preset6": "Bisiklet"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",
@@ -853,7 +852,9 @@
     "radiusLabel": "Görünürlük yarıçapı (km)",
     "radiusHint": "En fazla 200 km. Bu meydan okumayı sadece yakındaki kullanıcılar görecek.",
     "searchPlaceholder": "Meydan okuma ara...",
-    "maxDistance": "Maks mesafe"
+    "maxDistance": "Maks mesafe",
+    "stepsAutoSynced": "Adımlar saatinden/telefonundan otomatik senkronize edilir.",
+    "enterManually": "Manuel gir"
   },
   "liveMap": {
     "seeStories": "Hikayeleri gör",
@@ -1299,7 +1300,8 @@
     "weeksShort": "hf",
     "bannerTitle": "Ortak seri: {{count}} hf",
     "extendHint": "Uzatmak için pazara kadar birlikte bir antrenman kaydedin",
-    "weekDone": "Bu hafta tamam ✅"
+    "weekDone": "Bu hafta tamam ✅",
+    "noHistory": "Henüz ortak antrenman kaydedilmedi."
   },
   "traveler": {
     "toggle": "Buradan sadece geçiyorum",

@@ -290,7 +290,8 @@
     "viewProfile": "Vezi profilul",
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Răspunde la poveste…",
-    "storyReplyTag": "Răspuns la poveste"
+    "storyReplyTag": "Răspuns la poveste",
+    "locationExpired": "Locația a expirat"
   },
   "matches": {
     "sayHi": "Potrivire nouă — salută! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Adaugă o descriere la story",
     "clear": "Golește",
     "selectTimeTitle": "Alege ora",
-    "preset1": "Mă antrenez!",
-    "preset2": "Caut un partener",
-    "preset3": "Antrenament intens",
-    "preset4": "Yoga / stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Box",
-    "preset8": "Ciclism",
     "profileButton": "Story",
     "imAtGym": "Sunt la sală acum",
     "liveNow": "Ești live!",
@@ -724,7 +717,13 @@
     "noEditHint": "Un story publicat nu poate fi editat — îl poți șterge sau distribui în altă parte.",
     "shareExternal": "Distribuie în alte aplicații",
     "reactionPush": "a reacționat la povestea ta",
-    "seeViewers": "Vezi cine a vizionat"
+    "seeViewers": "Vezi cine a vizionat",
+    "preset1": "Antrenament intens",
+    "preset2": "Yoga / stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Box",
+    "preset6": "Ciclism"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",
@@ -853,7 +852,9 @@
     "radiusLabel": "Vizibil pe o rază de (km)",
     "radiusHint": "Max 200 km. Doar utilizatorii din apropiere vor vedea această provocare.",
     "searchPlaceholder": "Caută provocări...",
-    "maxDistance": "Distanță maximă"
+    "maxDistance": "Distanță maximă",
+    "stepsAutoSynced": "Pașii se sincronizează automat de pe ceas/telefon.",
+    "enterManually": "Introdu manual"
   },
   "liveMap": {
     "seeStories": "Vezi story-urile",
@@ -1299,7 +1300,8 @@
     "weeksShort": "săpt.",
     "bannerTitle": "Serie comună: {{count}} săpt.",
     "extendHint": "Înregistrați un antrenament împreună până duminică pentru a o prelungi",
-    "weekDone": "Săptămâna asta e bifată ✅"
+    "weekDone": "Săptămâna asta e bifată ✅",
+    "noHistory": "Încă nu există antrenamente comune înregistrate."
   },
   "traveler": {
     "toggle": "Sunt doar în trecere",

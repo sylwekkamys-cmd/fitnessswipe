@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Circle } from 'react-native-svg'
 import { useTranslation } from 'react-i18next'
 import { router, useFocusEffect } from 'expo-router'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   supabase, getMyProfile, getChallenges, getMyChallenges, createChallenge,
   joinChallenge, leaveChallenge, updateChallengeProgress, getChallengeParticipants,
@@ -116,6 +117,30 @@ export default function ChallengesScreen() {
   const [loadingParticipants, setLoadingParticipants] = useState(false)
   const [myProgress, setMyProgress] = useState('')
   const [updatingProgress, setUpdatingProgress] = useState(false)
+  // Wyzwania na kroki: gdy zegarek/telefon jest podpiety, postep dobija sie sam
+  // (syncStepsToChallenges) — reczne wpisywanie chowamy, chyba ze user sam je odblokuje
+  const [stepOverrides, setStepOverrides] = useState<Set<string>>(new Set())
+  const STEP_OVERRIDE_KEY = 'challenge_step_manual_override'
+
+  useEffect(() => {
+    AsyncStorage.getItem(STEP_OVERRIDE_KEY).then(raw => {
+      if (raw) { try { setStepOverrides(new Set(JSON.parse(raw))) } catch (e) { } }
+    })
+  }, [])
+
+  function enableManualSteps(challengeId: string) {
+    setStepOverrides(prev => {
+      const next = new Set(prev).add(challengeId)
+      AsyncStorage.setItem(STEP_OVERRIDE_KEY, JSON.stringify([...next])).catch(() => { })
+      return next
+    })
+  }
+
+  // Kroki sa auto-synchronizowane wtedy i tylko wtedy, gdy user ma podpiety
+  // zegarek/telefon (todaySteps !== null) i nie wlaczyl recznego trybu sam
+  function isStepAutoSynced(challenge: any): boolean {
+    return challenge?.goal_type === 'walking_steps' && todaySteps !== null && !stepOverrides.has(challenge.id)
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -659,7 +684,7 @@ export default function ChallengesScreen() {
                   {isJoined ? (
                     <View style={styles.progressGroup}>
                       <ProgressRing pct={pct} />
-                      {pct < 100 && daysLeft > 0 && (
+                      {pct < 100 && daysLeft > 0 && !isStepAutoSynced(challenge) && (
                         <TouchableOpacity style={styles.quickAddBtn} onPress={() => quickAddProgress(challenge)}>
                           <Ionicons name="add" size={22} color={BG} />
                         </TouchableOpacity>
@@ -949,7 +974,15 @@ export default function ChallengesScreen() {
                 </Text>
               </View>
 
-              {myChallengeIds.has(selectedChallenge?.id) && (
+              {myChallengeIds.has(selectedChallenge?.id) && isStepAutoSynced(selectedChallenge) ? (
+                <View style={styles.autoSyncCard}>
+                  <Ionicons name="watch-outline" size={18} color={LIME} />
+                  <Text style={styles.autoSyncText}>{t('challenges.stepsAutoSynced')}</Text>
+                  <TouchableOpacity onPress={() => enableManualSteps(selectedChallenge.id)}>
+                    <Text style={styles.autoSyncManualLink}>{t('challenges.enterManually')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : myChallengeIds.has(selectedChallenge?.id) && (
                 <View style={styles.progressUpdateRow}>
                   <TextInput
                     style={[styles.input, { flex: 1 }]}
@@ -1196,6 +1229,9 @@ const styles = StyleSheet.create({
   detailGoalDays: { fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 },
 
   progressUpdateRow: { flexDirection: 'row', gap: 10, marginBottom: 20, alignItems: 'center' },
+  autoSyncCard: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG_LIGHT, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(148,227,54,0.25)', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 20 },
+  autoSyncText: { flex: 1, fontSize: 12.5, color: 'rgba(255,255,255,0.75)', lineHeight: 17 },
+  autoSyncManualLink: { fontSize: 12, fontWeight: '700', color: LIME, textDecorationLine: 'underline' },
   groupChatBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(125,197,46,0.08)', borderWidth: 1.5, borderColor: 'rgba(125,197,46,0.25)', borderRadius: 14, padding: 14, marginBottom: 20 },
   groupChatBtnText: { flex: 1, fontSize: 15, fontWeight: '700', color: '#fff' },
   updateProgressBtn: { width: 48, height: 48, borderRadius: 14, backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center' },

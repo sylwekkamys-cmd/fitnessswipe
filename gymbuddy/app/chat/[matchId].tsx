@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Image, Modal, Alert, Animated, PanResponder, Pressable, LayoutAnimation, UIManager } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Image, Modal, Alert, Animated, PanResponder, Pressable, LayoutAnimation, UIManager, ScrollView } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as ScreenCapture from 'expo-screen-capture'
 import * as ImagePicker from 'expo-image-picker'
@@ -136,6 +136,13 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null)
   // Auto-scroll na koniec dziala tylko do pierwszego recznego przewiniecia
   const userScrolledRef = useRef(false)
+  // Wymusza przerysowanie co minute, zeby udostepniona lokalizacja wygasla "sama"
+  // bez konieczosci ponownego wejscia w czat
+  const [, forceLiveTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => forceLiveTick(t => t + 1), 60_000)
+    return () => clearInterval(id)
+  }, [])
   const [myProfile, setMyProfile] = useState<Profile | null>(null)
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -148,6 +155,20 @@ export default function ChatScreen() {
   const [sendingInvite, setSendingInvite] = useState(false)
   const [duoWeeks, setDuoWeeks] = useState(0)
   const [duoThisWeek, setDuoThisWeek] = useState(false)
+  const [showDuoModal, setShowDuoModal] = useState(false)
+  const [duoWorkouts, setDuoWorkouts] = useState<{ workout_date: string; workout_type: string; creator_id: string }[]>([])
+  const [duoLoading, setDuoLoading] = useState(false)
+
+  async function openDuoModal() {
+    if (!myProfile || !otherProfile) return
+    setShowDuoModal(true)
+    setDuoLoading(true)
+    try {
+      const { getDuoWorkouts } = await import('../../lib/supabase')
+      setDuoWorkouts(await getDuoWorkouts(myProfile.id, otherProfile.id))
+    } catch (e) { }
+    finally { setDuoLoading(false) }
+  }
   const [icebreakers, setIcebreakers] = useState<string[]>([])
   const [iceLoading, setIceLoading] = useState(false)
   const [showIcePanel, setShowIcePanel] = useState(false)
@@ -757,6 +778,11 @@ export default function ChatScreen() {
     return new Date(dateStr).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
   }
 
+  const LOCATION_TTL_MS = 3600_000
+  function isLocationExpired(sentAt: string): boolean {
+    return Date.now() - new Date(sentAt).getTime() > LOCATION_TTL_MS
+  }
+
   // Skok do wiadomosci z wynikow wyszukiwania + chwilowe podswietlenie dymka
   function jumpToMessage(id: string) {
     setSearchMode(false)
@@ -853,25 +879,32 @@ export default function ChatScreen() {
             ) : item.audio_url ? (
               <VoiceBubble uri={item.audio_url} duration={item.audio_duration ?? 0} isMe={isMe} />
             ) : item.location_lat != null && item.location_lng != null ? (
-              <TouchableOpacity onPress={() => openInMaps(item)} activeOpacity={0.85}>
-                <View style={styles.mapWrap} pointerEvents="none">
-                  <MapView
-                    style={styles.mapPreview}
-                    liteMode
-                    initialRegion={{ latitude: item.location_lat, longitude: item.location_lng, latitudeDelta: 0.008, longitudeDelta: 0.008 }}
-                    scrollEnabled={false}
-                    zoomEnabled={false}
-                    rotateEnabled={false}
-                    pitchEnabled={false}
-                  >
-                    <Marker coordinate={{ latitude: item.location_lat, longitude: item.location_lng }} />
-                  </MapView>
+              isLocationExpired(item.sent_at) ? (
+                <View style={styles.mapExpiredWrap}>
+                  <Ionicons name="location-outline" size={20} color={isMe ? 'rgba(13,27,46,0.4)' : 'rgba(255,255,255,0.35)'} />
+                  <Text style={[styles.mapExpiredText, isMe ? { color: 'rgba(13,27,46,0.5)' } : null]}>{t('chat.locationExpired')}</Text>
                 </View>
-                <View style={styles.mapLabelRow}>
-                  <Ionicons name="location" size={14} color={isMe ? '#0d1b2e' : '#94e336'} />
-                  <Text style={[styles.mapLabelText, isMe ? { color: '#0d1b2e' } : null]} numberOfLines={1}>{item.location_name ?? ''}</Text>
-                </View>
-              </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => openInMaps(item)} activeOpacity={0.85}>
+                  <View style={styles.mapWrap} pointerEvents="none">
+                    <MapView
+                      style={styles.mapPreview}
+                      liteMode
+                      initialRegion={{ latitude: item.location_lat, longitude: item.location_lng, latitudeDelta: 0.008, longitudeDelta: 0.008 }}
+                      scrollEnabled={false}
+                      zoomEnabled={false}
+                      rotateEnabled={false}
+                      pitchEnabled={false}
+                    >
+                      <Marker coordinate={{ latitude: item.location_lat, longitude: item.location_lng }} />
+                    </MapView>
+                  </View>
+                  <View style={styles.mapLabelRow}>
+                    <Ionicons name="location" size={14} color={isMe ? '#0d1b2e' : '#94e336'} />
+                    <Text style={[styles.mapLabelText, isMe ? { color: '#0d1b2e' } : null]} numberOfLines={1}>{item.location_name ?? ''}</Text>
+                  </View>
+                </TouchableOpacity>
+              )
             ) : (
               <Text style={[styles.bubbleText, isMe ? [styles.bubbleTextMe, { color: theme.onMe }] : styles.bubbleTextOther]}>{item.content}</Text>
             )}
@@ -1017,22 +1050,25 @@ export default function ChatScreen() {
         </View>
       )}
 
-      {/* Wspolna passa pary — duet plomienia z terminem przedluzenia */}
+      {/* Wspolna passa pary — duet plomienia z terminem przedluzenia; tap = wyniki */}
       {duoWeeks > 0 && myProfile && otherProfile && (
-        <LinearGradient
-          colors={['rgba(240,180,41,0.16)', 'rgba(255,71,87,0.10)']}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-          style={styles.duoBanner}
-        >
-          <View style={styles.duoAvatars}>
-            <Image source={{ uri: myProfile.photo_urls?.[0] ?? 'https://i.pravatar.cc/40' }} style={styles.duoAvatar} />
-            <Image source={{ uri: otherProfile.photo_urls?.[0] ?? 'https://i.pravatar.cc/40' }} style={[styles.duoAvatar, { marginLeft: -10 }]} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.duoBannerTitle}>{'🔥'} {t('duo.bannerTitle', { count: duoWeeks })}</Text>
-            <Text style={styles.duoBannerSub}>{duoThisWeek ? t('duo.weekDone') : t('duo.extendHint')}</Text>
-          </View>
-        </LinearGradient>
+        <TouchableOpacity activeOpacity={0.85} onPress={openDuoModal}>
+          <LinearGradient
+            colors={['rgba(240,180,41,0.16)', 'rgba(255,71,87,0.10)']}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+            style={styles.duoBanner}
+          >
+            <View style={styles.duoAvatars}>
+              <Image source={{ uri: myProfile.photo_urls?.[0] ?? 'https://i.pravatar.cc/40' }} style={styles.duoAvatar} />
+              <Image source={{ uri: otherProfile.photo_urls?.[0] ?? 'https://i.pravatar.cc/40' }} style={[styles.duoAvatar, { marginLeft: -10 }]} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.duoBannerTitle}>{'🔥'} {t('duo.bannerTitle', { count: duoWeeks })}</Text>
+              <Text style={styles.duoBannerSub}>{duoThisWeek ? t('duo.weekDone') : t('duo.extendHint')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.4)" />
+          </LinearGradient>
+        </TouchableOpacity>
       )}
 
       {/* Baner pojedynku 1v1: przeciaganie liny + zwijana pigulka */}
@@ -1344,6 +1380,37 @@ export default function ChatScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* Wyniki Wspolnej passy: lista wspolnych treningow + aktualna liczba tygodni */}
+      <Modal visible={showDuoModal} transparent animationType="slide" onRequestClose={() => setShowDuoModal(false)}>
+        <View style={styles.duoOverlay}>
+          <View style={styles.duoSheet}>
+            <View style={styles.safetyHandle} />
+            <Text style={styles.duoSheetTitle}>{'🔥'} {t('duo.bannerTitle', { count: duoWeeks })}</Text>
+            <Text style={styles.duoSheetSub}>{duoThisWeek ? t('duo.weekDone') : t('duo.extendHint')}</Text>
+            {duoLoading ? (
+              <ActivityIndicator color={PRIMARY} style={{ marginVertical: 24 }} />
+            ) : (
+              <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+                {duoWorkouts.map((w, i) => (
+                  <View key={i} style={styles.duoWorkoutRow}>
+                    <Ionicons name="barbell-outline" size={16} color={PRIMARY} />
+                    <Text style={styles.duoWorkoutDate}>{new Date(w.workout_date + 'T12:00:00').toLocaleDateString()}</Text>
+                    <Text style={styles.duoWorkoutType} numberOfLines={1}>{t('workouts.types.' + w.workout_type)}</Text>
+                    <Text style={styles.duoWorkoutBy}>{w.creator_id === myProfile?.id ? t('chat.you') : otherProfile?.name}</Text>
+                  </View>
+                ))}
+                {duoWorkouts.length === 0 && (
+                  <Text style={styles.duoEmpty}>{t('duo.noHistory')}</Text>
+                )}
+              </ScrollView>
+            )}
+            <TouchableOpacity style={styles.sheetCancel} onPress={() => setShowDuoModal(false)}>
+              <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Jednorazowy arkusz bezpieczenstwa przed pierwszym wspolnym treningiem */}
       <Modal visible={showSafetySheet} transparent animationType="slide" onRequestClose={dismissSafetySheet}>
         <View style={styles.safetyOverlay}>
@@ -1602,6 +1669,8 @@ const styles = StyleSheet.create({
   mapWrap: { width: 220, height: 120, borderRadius: 12, overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.2)' },
   mapPreview: { width: 220, height: 120 },
   mapLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6, maxWidth: 220 },
+  mapExpiredWrap: { width: 220, height: 120, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.15)', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  mapExpiredText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
   mapLabelText: { flex: 1, fontSize: 12.5, fontWeight: '700', color: '#94e336' },
   recordingPill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: BG, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: 'rgba(255,107,107,0.4)' },
   recordingDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#ff6b6b' },
@@ -1660,6 +1729,17 @@ const styles = StyleSheet.create({
   duoAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: '#f0b429' },
   duoBannerTitle: { fontSize: 12.5, fontWeight: '800', color: '#f0b429' },
   duoBannerSub: { fontSize: 10.5, color: 'rgba(255,255,255,0.55)', marginTop: 1 },
+  duoOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  duoSheet: { backgroundColor: BG_LIGHT, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, paddingBottom: 30 },
+  duoSheetTitle: { fontSize: 17, fontWeight: '800', color: '#f0b429', textAlign: 'center' },
+  duoSheetSub: { fontSize: 12.5, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 4, marginBottom: 16 },
+  duoWorkoutRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  duoWorkoutDate: { fontSize: 12.5, color: 'rgba(255,255,255,0.55)', width: 78 },
+  duoWorkoutType: { flex: 1, fontSize: 13, fontWeight: '700', color: '#fff' },
+  duoWorkoutBy: { fontSize: 11.5, fontWeight: '700', color: PRIMARY },
+  duoEmpty: { fontSize: 13, color: 'rgba(255,255,255,0.45)', textAlign: 'center', paddingVertical: 20 },
+  sheetCancel: { alignItems: 'center', paddingVertical: 12, marginTop: 6 },
+  sheetCancelText: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
   duelBanner: { backgroundColor: BG_LIGHT, borderWidth: 1.5, borderColor: 'rgba(255,71,87,0.4)', borderRadius: 14, marginHorizontal: 12, marginTop: 8, padding: 12 },
   duelTitle: { fontSize: 13.5, fontWeight: '800', color: '#fff' },
   duelStake: { fontSize: 12, color: '#f0b429', marginTop: 4, fontWeight: '600' },

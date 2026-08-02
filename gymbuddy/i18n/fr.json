@@ -290,7 +290,8 @@
     "viewProfile": "Voir le profil",
     "duelTile": "Défi",
     "storyReplyPlaceholder": "Répondre à la story…",
-    "storyReplyTag": "Réponse à la story"
+    "storyReplyTag": "Réponse à la story",
+    "locationExpired": "Position expirée"
   },
   "matches": {
     "sayHi": "Nouveau match — dis bonjour ! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Ajoute une légende",
     "clear": "Effacer",
     "selectTimeTitle": "Choisir l'heure",
-    "preset1": "Entraînement !",
-    "preset2": "Je cherche un partenaire",
-    "preset3": "Séance intense",
-    "preset4": "Yoga / stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boxe",
-    "preset8": "Vélo",
     "profileButton": "Story",
     "imAtGym": "Je suis à la salle maintenant",
     "liveNow": "Vous êtes en direct!",
@@ -724,7 +717,13 @@
     "noEditHint": "Une story publiée ne peut pas être modifiée — tu peux la supprimer ou la partager ailleurs.",
     "shareExternal": "Partager vers d'autres applis",
     "reactionPush": "a réagi à ta story",
-    "seeViewers": "Voir qui a regardé"
+    "seeViewers": "Voir qui a regardé",
+    "preset1": "Séance intense",
+    "preset2": "Yoga / stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boxe",
+    "preset6": "Vélo"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",
@@ -853,7 +852,9 @@
     "radiusLabel": "Visible dans un rayon de (km)",
     "radiusHint": "Max 200 km. Seuls les utilisateurs à proximité verront ce défi.",
     "searchPlaceholder": "Rechercher des défis...",
-    "maxDistance": "Distance max"
+    "maxDistance": "Distance max",
+    "stepsAutoSynced": "Les pas se synchronisent automatiquement depuis ta montre/ton téléphone.",
+    "enterManually": "Saisir manuellement"
   },
   "liveMap": {
     "seeStories": "Voir les stories",
@@ -1299,7 +1300,8 @@
     "weeksShort": "sem.",
     "bannerTitle": "Série commune : {{count}} sem.",
     "extendHint": "Enregistrez une séance commune avant dimanche pour prolonger",
-    "weekDone": "Cette semaine est validée ✅"
+    "weekDone": "Cette semaine est validée ✅",
+    "noHistory": "Aucun entraînement commun enregistré pour l’instant."
   },
   "traveler": {
     "toggle": "Juste de passage",

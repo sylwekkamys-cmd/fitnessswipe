@@ -1408,6 +1408,20 @@ export async function getDuoStreaks(myProfileId: string): Promise<Record<string,
   return map
 }
 
+// Wspolne treningi pary (do ekranu wynikow Wspolnej passy): daty + kto zalogowal,
+// posortowane od najnowszych. Trigger tylko po stronie klienta (obie kolumny
+// creator_id/partner_id sa rownoprawne wiec sprawdzamy obie strony)
+export async function getDuoWorkouts(myId: string, otherId: string): Promise<{ workout_date: string; workout_type: string; creator_id: string }[]> {
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('workout_date, workout_type, creator_id')
+    .or(`and(creator_id.eq.${myId},partner_id.eq.${otherId}),and(creator_id.eq.${otherId},partner_id.eq.${myId})`)
+    .order('workout_date', { ascending: false })
+    .limit(50)
+  if (error) { console.log('getDuoWorkouts error:', error); return [] }
+  return data ?? []
+}
+
 export async function createDuel(matchId: string, metric: 'workouts' | 'steps', stake: string, days: number): Promise<{ success: boolean; error?: string }> {
   const { data, error } = await supabase.rpc('create_duel', {
     p_match_id: matchId, p_metric: metric, p_stake: stake, p_days: days,

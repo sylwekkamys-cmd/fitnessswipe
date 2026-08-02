@@ -290,7 +290,8 @@
     "viewProfile": "Profiel bekijken",
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Reageer op story…",
-    "storyReplyTag": "Reactie op story"
+    "storyReplyTag": "Reactie op story",
+    "locationExpired": "Locatie verlopen"
   },
   "matches": {
     "sayHi": "Nieuwe match — zeg hallo! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Voeg een tekst toe",
     "clear": "Wissen",
     "selectTimeTitle": "Tijd kiezen",
-    "preset1": "Trainen!",
-    "preset2": "Zoek een partner",
-    "preset3": "Intensieve training",
-    "preset4": "Yoga / stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boksen",
-    "preset8": "Fietsen",
     "profileButton": "Story",
     "imAtGym": "Ik ben nu in de sportschool",
     "liveNow": "Je bent live!",
@@ -724,7 +717,13 @@
     "noEditHint": "Een geplaatste story kan niet worden bewerkt — je kunt hem verwijderen of elders delen.",
     "shareExternal": "Delen naar andere apps",
     "reactionPush": "heeft op je story gereageerd",
-    "seeViewers": "Bekijk wie het zag"
+    "seeViewers": "Bekijk wie het zag",
+    "preset1": "Intensieve training",
+    "preset2": "Yoga / stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boksen",
+    "preset6": "Fietsen"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",
@@ -853,7 +852,9 @@
     "radiusLabel": "Zichtbaar binnen (km)",
     "radiusHint": "Max 200 km. Alleen gebruikers in de buurt zien deze uitdaging.",
     "searchPlaceholder": "Zoek uitdagingen...",
-    "maxDistance": "Max afstand"
+    "maxDistance": "Max afstand",
+    "stepsAutoSynced": "Stappen worden automatisch gesynchroniseerd vanaf je horloge/telefoon.",
+    "enterManually": "Handmatig invoeren"
   },
   "liveMap": {
     "seeStories": "Bekijk stories",
@@ -1299,7 +1300,8 @@
     "weeksShort": "wk",
     "bannerTitle": "Gedeelde streak: {{count}} wk",
     "extendHint": "Log samen een training vóór zondag om te verlengen",
-    "weekDone": "Deze week staat ✅"
+    "weekDone": "Deze week staat ✅",
+    "noHistory": "Nog geen gedeelde trainingen gelogd."
   },
   "traveler": {
     "toggle": "Ik ben hier op doorreis",

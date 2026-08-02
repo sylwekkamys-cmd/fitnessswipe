@@ -290,7 +290,8 @@
     "viewProfile": "View profile",
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Reply to story…",
-    "storyReplyTag": "Reply to story"
+    "storyReplyTag": "Reply to story",
+    "locationExpired": "Location expired"
   },
   "matches": {
     "sayHi": "New match — say hi! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Add a story caption",
     "clear": "Clear",
     "selectTimeTitle": "Select time",
-    "preset1": "Training!",
-    "preset2": "Looking for a partner",
-    "preset3": "Intense workout",
-    "preset4": "Yoga / stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boxing",
-    "preset8": "Cycling",
     "profileButton": "Story",
     "imAtGym": "I'm at the gym now",
     "liveNow": "You're live!",
@@ -724,7 +717,13 @@
     "noEditHint": "A published story can't be edited — you can delete it or share it elsewhere.",
     "shareExternal": "Share to other apps",
     "reactionPush": "reacted to your story",
-    "seeViewers": "See who viewed"
+    "seeViewers": "See who viewed",
+    "preset1": "Intense workout",
+    "preset2": "Yoga / stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boxing",
+    "preset6": "Cycling"
   },
   "reportBlock": {
     "report": "Report user",
@@ -853,7 +852,9 @@
     "radiusLabel": "Visible within (km)",
     "radiusHint": "Max 200 km. Only nearby users will see this challenge.",
     "searchPlaceholder": "Search challenges...",
-    "maxDistance": "Max distance"
+    "maxDistance": "Max distance",
+    "stepsAutoSynced": "Steps sync automatically from your watch/phone.",
+    "enterManually": "Enter manually"
   },
   "liveMap": {
     "seeStories": "See stories",
@@ -1299,7 +1300,8 @@
     "weeksShort": "wk",
     "bannerTitle": "Shared streak: {{count}} wk",
     "extendHint": "Log a workout together by Sunday to extend it",
-    "weekDone": "This week is in ✅"
+    "weekDone": "This week is in ✅",
+    "noHistory": "No shared workouts logged yet."
   },
   "traveler": {
     "toggle": "Just passing through",

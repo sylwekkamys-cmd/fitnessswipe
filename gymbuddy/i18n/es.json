@@ -290,7 +290,8 @@
     "viewProfile": "Ver perfil",
     "duelTile": "Duelo",
     "storyReplyPlaceholder": "Responder a la historia…",
-    "storyReplyTag": "Respuesta a la historia"
+    "storyReplyTag": "Respuesta a la historia",
+    "locationExpired": "Ubicación caducada"
   },
   "matches": {
     "sayHi": "Nuevo match — saluda! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Añade un texto",
     "clear": "Borrar",
     "selectTimeTitle": "Seleccionar hora",
-    "preset1": "¡Entrenando!",
-    "preset2": "Busco compañero",
-    "preset3": "Entreno intenso",
-    "preset4": "Yoga / estiramientos",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boxeo",
-    "preset8": "Ciclismo",
     "profileButton": "Historia",
     "imAtGym": "Estoy en el gimnasio ahora",
     "liveNow": "¡Estás en vivo!",
@@ -724,7 +717,13 @@
     "noEditHint": "Una historia publicada no se puede editar — puedes borrarla o compartirla fuera.",
     "shareExternal": "Compartir en otras apps",
     "reactionPush": "reaccionó a tu historia",
-    "seeViewers": "Ver quién lo vio"
+    "seeViewers": "Ver quién lo vio",
+    "preset1": "Entreno intenso",
+    "preset2": "Yoga / estiramientos",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boxeo",
+    "preset6": "Ciclismo"
   },
   "reportBlock": {
     "report": "Denunciar usuario",
@@ -853,7 +852,9 @@
     "radiusLabel": "Visible dentro de (km)",
     "radiusHint": "Máx 200 km. Solo los usuarios cercanos verán este desafío.",
     "searchPlaceholder": "Buscar desafíos...",
-    "maxDistance": "Distancia máx"
+    "maxDistance": "Distancia máx",
+    "stepsAutoSynced": "Los pasos se sincronizan automáticamente desde tu reloj/teléfono.",
+    "enterManually": "Introducir manualmente"
   },
   "liveMap": {
     "seeStories": "Ver stories",
@@ -1299,7 +1300,8 @@
     "weeksShort": "sem.",
     "bannerTitle": "Racha compartida: {{count}} sem.",
     "extendHint": "Registrad un entreno juntos antes del domingo para extenderla",
-    "weekDone": "Esta semana está hecha ✅"
+    "weekDone": "Esta semana está hecha ✅",
+    "noHistory": "Aún no hay entrenamientos compartidos registrados."
   },
   "traveler": {
     "toggle": "Estoy de paso",

@@ -290,7 +290,8 @@
     "viewProfile": "Zobacz profil",
     "duelTile": "Wyzwanie",
     "storyReplyPlaceholder": "Odpowiedz na relację…",
-    "storyReplyTag": "Odpowiedź na relację"
+    "storyReplyTag": "Odpowiedź na relację",
+    "locationExpired": "Lokalizacja wygasła"
   },
   "matches": {
     "sayHi": "Nowe dopasowanie — przywitaj się! 👋",
@@ -645,14 +646,6 @@
     "enterStatus": "Dodaj opis relacji",
     "clear": "Wyczyść",
     "selectTimeTitle": "Wybierz godzinę",
-    "preset1": "Trenuję!",
-    "preset2": "Szukam partnera",
-    "preset3": "Intensywny trening",
-    "preset4": "Yoga / stretching",
-    "preset5": "Cardio",
-    "preset6": "CrossFit",
-    "preset7": "Boks",
-    "preset8": "Kolarstwo",
     "profileButton": "Relacja",
     "imAtGym": "Jestem na siłowni",
     "liveNow": "Jesteś na żywo!",
@@ -724,7 +717,13 @@
     "noEditHint": "Opublikowanej relacji nie można edytować — możesz ją usunąć albo udostępnić dalej.",
     "shareExternal": "Udostępnij na inne aplikacje",
     "reactionPush": "zareagowano na Twoją relację",
-    "seeViewers": "Zobacz, kto oglądał"
+    "seeViewers": "Zobacz, kto oglądał",
+    "preset1": "Intensywny trening",
+    "preset2": "Yoga / stretching",
+    "preset3": "Cardio",
+    "preset4": "CrossFit",
+    "preset5": "Boks",
+    "preset6": "Kolarstwo"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",
@@ -853,7 +852,9 @@
     "radiusLabel": "Widoczne w promieniu (km)",
     "radiusHint": "Max 200 km. Tylko osoby w pobliżu zobaczą to wyzwanie.",
     "searchPlaceholder": "Szukaj wyzwań...",
-    "maxDistance": "Maks. odległość"
+    "maxDistance": "Maks. odległość",
+    "stepsAutoSynced": "Kroki dobijają się automatycznie z Twojego zegarka/telefonu.",
+    "enterManually": "Wpisz ręcznie"
   },
   "liveMap": {
     "seeStories": "Zobacz stories",
@@ -1299,7 +1300,8 @@
     "weeksShort": "tyg.",
     "bannerTitle": "Wspólna passa: {{count}} tyg.",
     "extendHint": "Zaliczcie wspólny trening do niedzieli, żeby przedłużyć",
-    "weekDone": "Ten tydzień zaliczony ✅"
+    "weekDone": "Ten tydzień zaliczony ✅",
+    "noHistory": "Brak jeszcze wspólnych treningów w dzienniczku."
   },
   "traveler": {
     "toggle": "Jestem tu przejazdem",
