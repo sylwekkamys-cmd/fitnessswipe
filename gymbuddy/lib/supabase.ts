@@ -626,18 +626,40 @@ export async function logWorkoutToday(profileId: string): Promise<{
 // Lista widzow mojej relacji (jak na Instagramie) + ich reakcje
 export async function getStatusViewers(myProfileId: string): Promise<any[]> {
   try {
+    // Bez embedow (status_views ma DWA FK do profiles — lekcja PGRST201):
+    // widzowie + reagujacy dwoma prostymi zapytaniami, profile trzecim
     const { data: views } = await supabase
       .from('status_views')
-      .select('viewer_id, viewed_at, profiles:viewer_id (id, name, photo_urls)')
+      .select('viewer_id, viewed_at')
       .eq('status_profile_id', myProfileId)
       .order('viewed_at', { ascending: false })
     const { data: rx } = await supabase
       .from('status_reactions')
-      .select('reactor_id, emoji')
+      .select('reactor_id, emoji, created_at')
       .eq('status_profile_id', myProfileId)
+
     const emojiBy: Record<string, string> = {}
     ;(rx ?? []).forEach((r: any) => { emojiBy[r.reactor_id] = r.emoji })
-    return (views ?? []).map((v: any) => ({ ...v, emoji: emojiBy[v.viewer_id] ?? null }))
+
+    // Reagujacy bez wpisu wyswietlenia (np. stare buildy) tez trafiaja na liste
+    const list: { viewer_id: string; viewed_at: string }[] = [...(views ?? [])]
+    const seen = new Set(list.map(v => v.viewer_id))
+    ;(rx ?? []).forEach((r: any) => {
+      if (!seen.has(r.reactor_id)) {
+        list.push({ viewer_id: r.reactor_id, viewed_at: r.created_at ?? new Date().toISOString() })
+        seen.add(r.reactor_id)
+      }
+    })
+    if (list.length === 0) return []
+
+    const { data: profs } = await supabase
+      .from('profiles')
+      .select('id, name, photo_urls')
+      .in('id', list.map(v => v.viewer_id))
+    const profBy: Record<string, any> = {}
+    ;(profs ?? []).forEach((p: any) => { profBy[p.id] = p })
+
+    return list.map(v => ({ ...v, profiles: profBy[v.viewer_id] ?? null, emoji: emojiBy[v.viewer_id] ?? null }))
   } catch (e) {
     return []
   }

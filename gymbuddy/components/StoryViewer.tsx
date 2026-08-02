@@ -56,7 +56,7 @@ function StoryMedia({ person, isActive, muted }: { person: any; isActive: boolea
 }
 
 // Pelnoekranowa przegladarka relacji (wspolna: pasek w Dopasowaniach, mapa silowni)
-export default function StoryViewer({ visible, people, initialIndex, onClose, myProfile, onShare }: {
+export default function StoryViewer({ visible, people, initialIndex, onClose, myProfile, onShare, onShowViewers }: {
   visible: boolean
   people: any[]
   initialIndex: number
@@ -64,6 +64,8 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
   myProfile: any
   // Udostepnianie na inne aplikacje — tylko dla WLASNYCH relacji (przycisk u gory)
   onShare?: (story: any) => void
+  // Lista widzow/reakcji — tylko dla WLASNYCH relacji (przycisk z oczkiem na dole)
+  onShowViewers?: () => void
 }) {
   const { t } = useTranslation()
   const [index, setIndex] = useState(initialIndex)
@@ -287,6 +289,15 @@ export default function StoryViewer({ visible, people, initialIndex, onClose, my
                 </View>
               ) : null}
             </View>
+            {/* Wlasna relacja: przycisk listy widzow (jak na Instagramie) */}
+            {isOwn && onShowViewers && (
+              <TouchableOpacity style={styles.viewersBtn} onPress={onShowViewers}>
+                <Ionicons name="eye-outline" size={16} color="#fff" />
+                <Text style={styles.viewersBtnText}>
+                  {person.view_count ?? 0} · {t('trainingStatus.seeViewers')}
+                </Text>
+              </TouchableOpacity>
+            )}
             {/* Reakcje i przejscie do profilu tylko dla OGLADAJACYCH — nie na wlasnej relacji */}
             {!isOwn && (
               <>
@@ -369,6 +380,8 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 13, color: 'rgba(255,255,255,0.7)' },
   partnerChip: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: '#94e336', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 8 },
   partnerChipText: { fontSize: 11, fontWeight: '700', color: '#0d1b2e' },
+  viewersBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.45)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 18, paddingHorizontal: 13, paddingVertical: 8, marginTop: 12 },
+  viewersBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
   replyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
   replyInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 22, paddingHorizontal: 15, paddingVertical: 9, fontSize: 14, color: '#fff' },
   replySendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center' },

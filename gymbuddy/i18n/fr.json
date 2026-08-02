@@ -723,7 +723,8 @@
     "addAnother": "Ajouter une autre story ({{n}}/{{max}})",
     "noEditHint": "Une story publiée ne peut pas être modifiée — tu peux la supprimer ou la partager ailleurs.",
     "shareExternal": "Partager vers d'autres applis",
-    "reactionPush": "a réagi à ta story"
+    "reactionPush": "a réagi à ta story",
+    "seeViewers": "Voir qui a regardé"
   },
   "reportBlock": {
     "report": "Signaler l'utilisateur",

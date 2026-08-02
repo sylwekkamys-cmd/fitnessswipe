@@ -723,7 +723,8 @@
     "addAnother": "Bir hikaye daha ekle ({{n}}/{{max}})",
     "noEditHint": "Yayınlanan hikaye düzenlenemez — silebilir veya başka yerde paylaşabilirsin.",
     "shareExternal": "Diğer uygulamalarda paylaş",
-    "reactionPush": "hikayene tepki verdi"
+    "reactionPush": "hikayene tepki verdi",
+    "seeViewers": "Kimler izledi gör"
   },
   "reportBlock": {
     "report": "Kullanıcıyı şikayet et",

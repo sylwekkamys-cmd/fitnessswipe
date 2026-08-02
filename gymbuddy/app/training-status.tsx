@@ -848,11 +848,12 @@ export default function TrainingStatusScreen() {
 
         {Object.keys(reactions).length > 0 && (
           <View style={styles.ovReactionsRow}>
+            {/* Tap w pigulke reakcji = ta sama lista co widzowie (kto i czym zareagowal) */}
             {Object.entries(reactions).map(([emoji, count]) => (
-              <View key={emoji} style={styles.statPill}>
+              <TouchableOpacity key={emoji} style={styles.statPill} onPress={openViewers}>
                 <Text style={{ fontSize: 12 }}>{emoji}</Text>
                 <Text style={styles.statPillText}>{count}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -875,6 +876,7 @@ export default function TrainingStatusScreen() {
         onClose={() => setPreviewIndex(null)}
         myProfile={myProfileObj}
         onShare={(story) => { setPreviewIndex(null); setTimeout(() => shareStoryExternal(story), 350) }}
+        onShowViewers={() => { setPreviewIndex(null); setTimeout(openViewers, 350) }}
       />
 
       {/* Kompozycja zdjecia do udostepnienia na inne sociale (media+filtr+naklejki+branding) */}

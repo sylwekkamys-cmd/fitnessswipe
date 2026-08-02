@@ -82,9 +82,23 @@ function SingleLayer({ id }: { id: string }) {
         </View>
       )
     case 'frame':
-      return <View style={[s.frame, { borderColor: 'rgba(255,255,255,0.92)' }]} pointerEvents="none" />
+      // Podwojna biala rama + cien konturowy: czytelna i na jasnych, i na ciemnych zdjeciach
+      return (
+        <View style={s.fill} pointerEvents="none">
+          <View style={s.frameShadow} />
+          <View style={[s.frameOuter, { borderColor: 'rgba(255,255,255,0.95)' }]} />
+          <View style={[s.frameInner, { borderColor: 'rgba(255,255,255,0.55)' }]} />
+        </View>
+      )
     case 'framegold':
-      return <View style={[s.frame, { borderColor: '#f0b429' }]} pointerEvents="none" />
+      // Zlota rama galeryjna: gruba zlota linia + cienka wewnetrzna + kontur
+      return (
+        <View style={s.fill} pointerEvents="none">
+          <View style={s.frameShadow} />
+          <View style={[s.frameOuter, { borderColor: '#f0b429', borderWidth: 2.5 }]} />
+          <View style={[s.frameInner, { borderColor: 'rgba(240,180,41,0.65)' }]} />
+        </View>
+      )
     default:
       return null
   }
@@ -241,6 +255,10 @@ const s = StyleSheet.create({
   vignetteOuter: { ...StyleSheet.absoluteFillObject, borderWidth: 70, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 120 },
   vignetteInner: { ...StyleSheet.absoluteFillObject, borderWidth: 34, borderColor: 'rgba(0,0,0,0.22)', borderRadius: 80 },
   frame: { position: 'absolute', top: 14, left: 14, right: 14, bottom: 14, borderWidth: 3, borderRadius: 22, zIndex: 2 },
+  // Nowe ramki: kontur (widocznosc na jasnym tle) + linia glowna + cienka wewnetrzna
+  frameShadow: { position: 'absolute', top: 11, left: 11, right: 11, bottom: 11, borderWidth: 4, borderRadius: 25, borderColor: 'rgba(0,0,0,0.28)', zIndex: 2 },
+  frameOuter: { position: 'absolute', top: 12, left: 12, right: 12, bottom: 12, borderWidth: 2, borderRadius: 24, zIndex: 2 },
+  frameInner: { position: 'absolute', top: 19, left: 19, right: 19, bottom: 19, borderWidth: 1, borderRadius: 17, zIndex: 2 },
   bigText: {
     fontSize: 34, fontWeight: '900', color: '#fff', letterSpacing: 0.5,
     textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,

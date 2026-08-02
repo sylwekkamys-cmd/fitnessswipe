@@ -723,7 +723,8 @@
     "addAnother": "Adaugă alt story ({{n}}/{{max}})",
     "noEditHint": "Un story publicat nu poate fi editat — îl poți șterge sau distribui în altă parte.",
     "shareExternal": "Distribuie în alte aplicații",
-    "reactionPush": "a reacționat la povestea ta"
+    "reactionPush": "a reacționat la povestea ta",
+    "seeViewers": "Vezi cine a vizionat"
   },
   "reportBlock": {
     "report": "Raportează utilizatorul",

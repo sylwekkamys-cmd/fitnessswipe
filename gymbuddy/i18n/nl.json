@@ -723,7 +723,8 @@
     "addAnother": "Nog een story toevoegen ({{n}}/{{max}})",
     "noEditHint": "Een geplaatste story kan niet worden bewerkt — je kunt hem verwijderen of elders delen.",
     "shareExternal": "Delen naar andere apps",
-    "reactionPush": "heeft op je story gereageerd"
+    "reactionPush": "heeft op je story gereageerd",
+    "seeViewers": "Bekijk wie het zag"
   },
   "reportBlock": {
     "report": "Gebruiker rapporteren",

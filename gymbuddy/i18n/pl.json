@@ -723,7 +723,8 @@
     "addAnother": "Dodaj kolejną relację ({{n}}/{{max}})",
     "noEditHint": "Opublikowanej relacji nie można edytować — możesz ją usunąć albo udostępnić dalej.",
     "shareExternal": "Udostępnij na inne aplikacje",
-    "reactionPush": "zareagowano na Twoją relację"
+    "reactionPush": "zareagowano na Twoją relację",
+    "seeViewers": "Zobacz, kto oglądał"
   },
   "reportBlock": {
     "report": "Zgłoś użytkownika",

@@ -723,7 +723,8 @@
     "addAnother": "Añadir otra historia ({{n}}/{{max}})",
     "noEditHint": "Una historia publicada no se puede editar — puedes borrarla o compartirla fuera.",
     "shareExternal": "Compartir en otras apps",
-    "reactionPush": "reaccionó a tu historia"
+    "reactionPush": "reaccionó a tu historia",
+    "seeViewers": "Ver quién lo vio"
   },
   "reportBlock": {
     "report": "Denunciar usuario",

@@ -723,7 +723,8 @@
     "addAnother": "Add another story ({{n}}/{{max}})",
     "noEditHint": "A published story can't be edited — you can delete it or share it elsewhere.",
     "shareExternal": "Share to other apps",
-    "reactionPush": "reacted to your story"
+    "reactionPush": "reacted to your story",
+    "seeViewers": "See who viewed"
   },
   "reportBlock": {
     "report": "Report user",

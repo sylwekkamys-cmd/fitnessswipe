@@ -134,6 +134,8 @@ export default function ChatScreen() {
   const { t, i18n } = useTranslation()
   const insets = useSafeAreaInsets()
   const flatListRef = useRef<FlatList>(null)
+  // Auto-scroll na koniec dziala tylko do pierwszego recznego przewiniecia
+  const userScrolledRef = useRef(false)
   const [myProfile, setMyProfile] = useState<Profile | null>(null)
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -759,6 +761,7 @@ export default function ChatScreen() {
   function jumpToMessage(id: string) {
     setSearchMode(false)
     setSearchTerm('')
+    userScrolledRef.current = true
     const index = messages.findIndex(m => m.id === id)
     if (index < 0) return
     setTimeout(() => {
@@ -1105,6 +1108,12 @@ export default function ChatScreen() {
         keyExtractor={item => item.id}
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
+        onContentSizeChange={() => {
+          // Android: layout listy konczy sie pozniej niz timeout z loadChat i lista
+          // zostawala w polowie — dociagamy na koniec, dopoki user sam nie przewinie
+          if (!userScrolledRef.current) flatListRef.current?.scrollToEnd({ animated: false })
+        }}
+        onScrollBeginDrag={() => { userScrolledRef.current = true }}
         onScrollToIndexFailed={info => {
           // Daleka wiadomosc jeszcze nie zmierzona — najpierw szacunkowy offset, potem ponowny skok
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false })
@@ -1287,7 +1296,9 @@ export default function ChatScreen() {
 
       {/* Modal tworzenia pojedynku */}
       <Modal visible={showDuelModal} transparent animationType="slide" onRequestClose={() => setShowDuelModal(false)}>
-        <View style={styles.duelOverlay}>
+        {/* KAV na OBU platformach: wewnatrz Modala Android nie dostaje adjustResize,
+            wiec bez tego klawiatura zaslania pole stawki */}
+        <KeyboardAvoidingView style={styles.duelOverlay} behavior="padding">
           <View style={styles.duelSheet}>
             <View style={styles.safetyHandle} />
             <Text style={styles.duelModalTitle}>{'⚔️'} {t('duel.createTitle', { name: otherProfile?.name ?? '' })}</Text>
@@ -1330,7 +1341,7 @@ export default function ChatScreen() {
               <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Jednorazowy arkusz bezpieczenstwa przed pierwszym wspolnym treningiem */}
