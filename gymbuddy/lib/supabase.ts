@@ -66,6 +66,8 @@ export type Message = {
   location_lat?: number | null
   location_lng?: number | null
   location_name?: string | null
+  view_once?: boolean | null
+  viewed_at?: string | null
 }
 
 // ============================================================

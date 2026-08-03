@@ -291,7 +291,11 @@
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Răspunde la poveste…",
     "storyReplyTag": "Răspuns la poveste",
-    "locationExpired": "Locația a expirat"
+    "locationExpired": "Locația a expirat",
+    "viewOncePhoto": "Fotografie de vizualizare unică",
+    "viewOncePhotoMsg": "Fotografie de vizualizare unică trimisă",
+    "viewOncePhotoTap": "Atinge pentru a vedea",
+    "viewOncePhotoOpened": "Fotografia a fost deja vizualizată"
   },
   "matches": {
     "sayHi": "Potrivire nouă — salută! 👋",

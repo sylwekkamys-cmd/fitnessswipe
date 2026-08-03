@@ -291,7 +291,11 @@
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Reageer op story…",
     "storyReplyTag": "Reactie op story",
-    "locationExpired": "Locatie verlopen"
+    "locationExpired": "Locatie verlopen",
+    "viewOncePhoto": "Eenmalige foto",
+    "viewOncePhotoMsg": "Eenmalige foto verzonden",
+    "viewOncePhotoTap": "Tik om te bekijken",
+    "viewOncePhotoOpened": "Foto al bekeken"
   },
   "matches": {
     "sayHi": "Nieuwe match — zeg hallo! 👋",

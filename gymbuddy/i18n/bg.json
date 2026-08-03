@@ -291,7 +291,11 @@
     "duelTile": "Дуел",
     "storyReplyPlaceholder": "Отговори на историята…",
     "storyReplyTag": "Отговор на история",
-    "locationExpired": "Локацията изтече"
+    "locationExpired": "Локацията изтече",
+    "viewOncePhoto": "Снимка за еднократен преглед",
+    "viewOncePhotoMsg": "Изпратена снимка за еднократен преглед",
+    "viewOncePhotoTap": "Докоснете, за да видите",
+    "viewOncePhotoOpened": "Снимката вече е видяна"
   },
   "matches": {
     "sayHi": "Ново съвпадение — поздрави! 👋",

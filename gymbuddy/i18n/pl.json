@@ -291,7 +291,11 @@
     "duelTile": "Wyzwanie",
     "storyReplyPlaceholder": "Odpowiedz na relację…",
     "storyReplyTag": "Odpowiedź na relację",
-    "locationExpired": "Lokalizacja wygasła"
+    "locationExpired": "Lokalizacja wygasła",
+    "viewOncePhoto": "Zdjęcie jednorazowe",
+    "viewOncePhotoMsg": "Wysłano zdjęcie jednorazowe",
+    "viewOncePhotoTap": "Dotknij, aby zobaczyć",
+    "viewOncePhotoOpened": "Zdjęcie zostało już obejrzane"
   },
   "matches": {
     "sayHi": "Nowe dopasowanie — przywitaj się! 👋",

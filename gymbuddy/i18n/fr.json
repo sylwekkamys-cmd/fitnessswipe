@@ -291,7 +291,11 @@
     "duelTile": "Défi",
     "storyReplyPlaceholder": "Répondre à la story…",
     "storyReplyTag": "Réponse à la story",
-    "locationExpired": "Position expirée"
+    "locationExpired": "Position expirée",
+    "viewOncePhoto": "Photo à usage unique",
+    "viewOncePhotoMsg": "Photo à usage unique envoyée",
+    "viewOncePhotoTap": "Touchez pour voir",
+    "viewOncePhotoOpened": "Photo déjà vue"
   },
   "matches": {
     "sayHi": "Nouveau match — dis bonjour ! 👋",

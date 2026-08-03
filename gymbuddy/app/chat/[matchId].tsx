@@ -387,7 +387,7 @@ export default function ChatScreen() {
     }
   }
 
-  async function uploadChatImage(uri: string) {
+  async function uploadChatImage(uri: string, viewOnce: boolean = false) {
     setUploadingImage(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -399,9 +399,51 @@ export default function ChatScreen() {
       const { error } = await supabase.storage.from('profile-photos').upload(path, formData, { contentType: `image/${ext}`, upsert: true })
       if (error) { Alert.alert(t('common.error'), error.message); return }
       const { data } = supabase.storage.from('profile-photos').getPublicUrl(path)
-      await sendMediaMessage({ image_url: data.publicUrl }, '📷 ' + t('chat.photoMsg'))
+      await sendMediaMessage(
+        { image_url: data.publicUrl, view_once: viewOnce },
+        viewOnce ? '🔥 ' + t('chat.viewOncePhotoMsg') : '📷 ' + t('chat.photoMsg')
+      )
     } catch (e: any) { Alert.alert(t('common.error'), e?.message) }
     finally { setUploadingImage(false) }
+  }
+
+  // Zdjecie jednorazowe: ten sam wybor aparat/galeria co zwykle zdjecie,
+  // tylko oznaczone view_once — odbiorca zobaczy je dokladnie raz
+  function pickViewOncePhoto() {
+    toggleAttachMenu()
+    Alert.alert(t('chat.viewOncePhoto'), '', [
+      {
+        text: '📷 ' + t('trainingStatus.takePhoto'), onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync()
+          if (status !== 'granted') return
+          const result = await ImagePicker.launchCameraAsync({ quality: 0.6 })
+          if (!result.canceled && result.assets[0]) uploadChatImage(result.assets[0].uri, true)
+        }
+      },
+      {
+        text: '🖼 ' + t('trainingStatus.fromGallery'), onPress: async () => {
+          const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6 } as any)
+          if (!result.canceled && result.assets[0]) uploadChatImage(result.assets[0].uri, true)
+        }
+      },
+      { text: t('common.cancel'), style: 'cancel' },
+    ])
+  }
+
+  // Otwarcie zdjecia: jesli jednorazowe i to WIDZ (nie nadawca) otwiera je
+  // pierwszy raz, oznacz viewed_at — zdjecie znika na zawsze dla obu stron
+  function openImageViewer(item: Message) {
+    if (item.view_once) {
+      if (item.viewed_at) return
+      setImageViewer(item.image_url!)
+      if (item.sender_id !== myProfile?.id) {
+        const viewedAt = new Date().toISOString()
+        setMessages(prev => prev.map(m => m.id === item.id ? { ...m, viewed_at: viewedAt } : m))
+        supabase.from('messages').update({ viewed_at: viewedAt }).eq('id', item.id).then(() => { })
+      }
+      return
+    }
+    setImageViewer(item.image_url!)
   }
 
   // Karta zalacznikow pod przyciskiem "+": rozsuwa sie nad polem tekstowym
@@ -805,6 +847,7 @@ export default function ChatScreen() {
   // Etykieta wiadomosci do cytatow i podgladow (media zamiast pustej tresci)
   function msgPreviewLabel(m?: Message | null): string {
     if (!m || m.deleted_at) return t('chat.deletedMsg')
+    if (m.image_url && m.view_once) return '🔥 ' + t('chat.viewOncePhoto')
     if (m.image_url?.includes('giphy')) return 'GIF 🎬'
     if (m.image_url) return '📷 ' + t('chat.photoMsg')
     if (m.audio_url) return '🎤 ' + t('chat.voiceMsg')
@@ -872,9 +915,21 @@ export default function ChatScreen() {
             ) : null}
             {item.deleted_at ? (
               <Text style={[styles.deletedText, isMe ? { color: 'rgba(13,27,46,0.55)' } : null]}>{t('chat.deletedMsg')}</Text>
+            ) : item.image_url && item.view_once ? (
+              item.viewed_at ? (
+                <View style={styles.viewOnceBurnedWrap}>
+                  <Ionicons name="flame" size={18} color={isMe ? 'rgba(13,27,46,0.4)' : 'rgba(255,255,255,0.35)'} />
+                  <Text style={[styles.viewOnceBurnedText, isMe ? { color: 'rgba(13,27,46,0.5)' } : null]}>{t('chat.viewOncePhotoOpened')}</Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.viewOnceWrap} onPress={() => openImageViewer(item)} activeOpacity={0.85}>
+                  <Ionicons name="flame-outline" size={26} color="#fff" />
+                  <Text style={styles.viewOnceLabel}>{t('chat.viewOncePhotoTap')}</Text>
+                </TouchableOpacity>
+              )
             ) : item.image_url ? (
               <View>
-                <TouchableOpacity onPress={() => setImageViewer(item.image_url!)} activeOpacity={0.85}>
+                <TouchableOpacity onPress={() => openImageViewer(item)} activeOpacity={0.85}>
                   <Image source={{ uri: item.image_url }} style={styles.chatImage} />
                 </TouchableOpacity>
                 {item.content && !item.content.startsWith('📷') && item.content !== 'GIF 🎬' ? (
@@ -1274,6 +1329,7 @@ export default function ChatScreen() {
             {[
               { key: 'cam', icon: 'camera' as const, label: t('chat.camera'), onPress: pickFromCamera },
               { key: 'gal', icon: 'images' as const, label: t('chat.gallery'), onPress: pickFromGallery },
+              { key: 'viewonce', icon: 'flame' as const, label: t('chat.viewOncePhoto'), onPress: pickViewOncePhoto },
               { key: 'loc', icon: 'location' as const, label: t('chat.location'), onPress: () => { toggleAttachMenu(); handleShareLocation() } },
             ].map(a => (
               <TouchableOpacity key={a.key} style={styles.attachTile} onPress={a.onPress}>
@@ -1676,6 +1732,10 @@ const styles = StyleSheet.create({
   mapLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6, maxWidth: 220 },
   mapExpiredWrap: { width: 220, height: 120, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.15)', alignItems: 'center', justifyContent: 'center', gap: 6 },
   mapExpiredText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
+  viewOnceWrap: { width: 150, height: 150, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  viewOnceLabel: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  viewOnceBurnedWrap: { width: 150, height: 80, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.15)', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  viewOnceBurnedText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
   mapLabelText: { flex: 1, fontSize: 12.5, fontWeight: '700', color: '#94e336' },
   recordingPill: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: BG, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: 'rgba(255,107,107,0.4)' },
   recordingDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#ff6b6b' },

@@ -291,7 +291,11 @@
     "duelTile": "Düello",
     "storyReplyPlaceholder": "Hikayeye yanıt ver…",
     "storyReplyTag": "Hikayeye yanıt",
-    "locationExpired": "Konum süresi doldu"
+    "locationExpired": "Konum süresi doldu",
+    "viewOncePhoto": "Tek seferlik fotoğraf",
+    "viewOncePhotoMsg": "Tek seferlik fotoğraf gönderildi",
+    "viewOncePhotoTap": "Görmek için dokun",
+    "viewOncePhotoOpened": "Fotoğraf zaten görüntülendi"
   },
   "matches": {
     "sayHi": "Yeni eşleşme — selam ver! 👋",

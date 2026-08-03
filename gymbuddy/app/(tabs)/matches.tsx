@@ -11,7 +11,7 @@ const PRIMARY = '#7dc52e'
 const BG = '#0d1b2e'
 const BG_LIGHT = '#1a2a44'
 
-type LastMessage = { content: string; sender_id: string; sent_at: string; deleted_at?: string | null; image_url?: string | null; audio_url?: string | null; location_lat?: number | null; location_name?: string | null }
+type LastMessage = { content: string; sender_id: string; sent_at: string; deleted_at?: string | null; image_url?: string | null; view_once?: boolean | null; audio_url?: string | null; location_lat?: number | null; location_name?: string | null }
 type MatchWithProfile = { id: string; matched_at: string; otherProfile: Profile; lastMsg: LastMessage | null }
 
 export default function MatchesScreen() {
@@ -79,7 +79,7 @@ export default function MatchesScreen() {
         const { data: otherProfile } = await supabase.from('profiles').select('*').eq('id', otherId).single()
         const { data: lastMsg } = await supabase
           .from('messages')
-          .select('content, sender_id, sent_at, deleted_at, image_url, audio_url, location_lat, location_name')
+          .select('content, sender_id, sent_at, deleted_at, image_url, view_once, audio_url, location_lat, location_name')
           .eq('match_id', match.id)
           .order('sent_at', { ascending: false })
           .limit(1)
@@ -230,6 +230,7 @@ export default function MatchesScreen() {
         const isMine = item.lastMsg?.sender_id === myProfileId
         const lastLabel = item.lastMsg
           ? (item.lastMsg.deleted_at ? t('chat.deletedMsg')
+            : item.lastMsg.image_url && item.lastMsg.view_once ? '🔥 ' + t('chat.viewOncePhoto')
             : item.lastMsg.image_url?.includes('giphy') ? 'GIF 🎬'
             : item.lastMsg.image_url ? '📷 ' + t('chat.photoMsg')
             : item.lastMsg.audio_url ? '🎤 ' + t('chat.voiceMsg')

@@ -291,7 +291,11 @@
     "duelTile": "Duelo",
     "storyReplyPlaceholder": "Responder a la historia…",
     "storyReplyTag": "Respuesta a la historia",
-    "locationExpired": "Ubicación caducada"
+    "locationExpired": "Ubicación caducada",
+    "viewOncePhoto": "Foto de una sola vista",
+    "viewOncePhotoMsg": "Foto de una sola vista enviada",
+    "viewOncePhotoTap": "Toca para ver",
+    "viewOncePhotoOpened": "Foto ya vista"
   },
   "matches": {
     "sayHi": "Nuevo match — saluda! 👋",

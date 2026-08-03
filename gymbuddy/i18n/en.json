@@ -291,7 +291,11 @@
     "duelTile": "Duel",
     "storyReplyPlaceholder": "Reply to story…",
     "storyReplyTag": "Reply to story",
-    "locationExpired": "Location expired"
+    "locationExpired": "Location expired",
+    "viewOncePhoto": "View once photo",
+    "viewOncePhotoMsg": "Sent a view-once photo",
+    "viewOncePhotoTap": "Tap to view",
+    "viewOncePhotoOpened": "Photo already viewed"
   },
   "matches": {
     "sayHi": "New match — say hi! 👋",
